@@ -1,0 +1,33 @@
+{
+  "name": "skytale.it",
+  "type": "module",
+  "version": "0.0.1",
+  "description": "Andrea Gigante's personal portfolio and articles website — built with Astro, Tailwind CSS, and MDX.",
+  "author": "Andrea Gigante",
+  "license": "MIT",
+  "homepage": "https://www.skytale.it",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/agigante80/skytale.it.git"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/mdx": "^5.0.3",
+    "@astrojs/sitemap": "^3.7.2",
+    "@fontsource-variable/inter": "^5.2.8",
+    "@fontsource-variable/jetbrains-mono": "^5.2.8",
+    "@fontsource-variable/space-grotesk": "^5.2.10",
+    "@tailwindcss/vite": "^4.2.2",
+    "astro": "^6.1.3",
+    "rss-parser": "^3.13.0",
+    "tailwindcss": "^4.2.2"
+  }
+}

@@ -1,0 +1,51 @@
+---
+interface Props {
+  categories: string[];
+  activeCategory?: string;
+}
+
+const { categories } = Astro.props;
+---
+
+<div class="flex flex-wrap gap-2 mb-8" id="filter-tabs">
+  <button
+    data-category="all"
+    class="filter-tab active px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer bg-[var(--color-accent)]/10 text-[var(--color-accent)] border border-[var(--color-accent)]/30"
+  >
+    All
+  </button>
+  {categories.map(cat => (
+    <button
+      data-category={cat}
+      class="filter-tab px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer text-[var(--color-text-muted)] border border-[var(--color-border)] hover:border-[var(--color-accent)]/30 hover:text-[var(--color-accent)]"
+    >
+      {cat}
+    </button>
+  ))}
+</div>
+
+<script is:inline>
+  document.getElementById('filter-tabs').addEventListener('click', (e) => {
+    const btn = e.target.closest('.filter-tab');
+    if (!btn) return;
+
+    const category = btn.dataset.category;
+
+    // Update active tab
+    document.querySelectorAll('.filter-tab').forEach(tab => {
+      tab.classList.remove('active', 'bg-[var(--color-accent)]/10', 'text-[var(--color-accent)]', 'border-[var(--color-accent)]/30');
+      tab.classList.add('text-[var(--color-text-muted)]', 'border-[var(--color-border)]');
+    });
+    btn.classList.add('active', 'bg-[var(--color-accent)]/10', 'text-[var(--color-accent)]', 'border-[var(--color-accent)]/30');
+    btn.classList.remove('text-[var(--color-text-muted)]', 'border-[var(--color-border)]');
+
+    // Filter projects
+    document.querySelectorAll('[data-project-category]').forEach(card => {
+      if (category === 'all' || card.dataset.projectCategory === category) {
+        card.style.display = '';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  });
+</script>

@@ -1,0 +1,44 @@
+---
+import Base from '../../layouts/Base.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import FilterTabs from '../../components/FilterTabs.astro';
+import { getCollection } from 'astro:content';
+
+const allProjects = await getCollection('projects');
+const projects = allProjects.sort((a, b) => a.data.sortOrder - b.data.sortOrder);
+
+const categories = [...new Set(projects.map(p => p.data.category))];
+---
+
+<Base title="Projects | Andrea Gigante" description="Portfolio of tools and systems I've designed and built, from MCP servers and AI agents to security monitoring and financial automation.">
+  <section class="py-16 sm:py-24">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h1 class="text-3xl sm:text-4xl font-bold mb-3" style="font-family: var(--font-heading);">
+        Projects
+      </h1>
+      <p class="text-lg text-[var(--color-text-muted)] mb-10">
+        Real tools I've designed, built, and shipped. Every project has source code you can read.
+      </p>
+
+      <FilterTabs categories={categories} />
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {projects.map(project => (
+          <div data-project-category={project.data.category}>
+            <ProjectCard
+              title={project.data.title}
+              description={project.data.description}
+              category={project.data.category}
+              tier={project.data.tier}
+              techStack={project.data.techStack}
+              githubUrl={project.data.githubUrl}
+              liveUrl={project.data.liveUrl}
+              slug={project.id}
+              metrics={project.data.metrics}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+</Base>

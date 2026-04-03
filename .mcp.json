@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "seo-inspector": {
+      "command": "npx",
+      "args": ["-y", "@mgsrevolver/seo-inspector"]
+    }
+  }
+}

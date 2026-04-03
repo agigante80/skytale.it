@@ -1,0 +1,215 @@
+---
+import Base from '../layouts/Base.astro';
+
+const skillGroups = [
+  {
+    name: "Product & Strategy",
+    icon: `<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>`,
+    skills: ["Product Management", "Roadmap Design", "Stakeholder Management", "Data-Driven Decisions", "User Research"],
+  },
+  {
+    name: "Agile & Delivery",
+    icon: `<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>`,
+    skills: ["Scrum", "Kanban", "SAFe", "Waterfall-to-Agile Transitions", "Story Mapping"],
+  },
+  {
+    name: "AI & Agents",
+    icon: `<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>`,
+    skills: ["MCP Servers", "Multi-Agent Orchestration", "Prompt Engineering", "OpenAI API", "AI Content Pipelines"],
+  },
+  {
+    name: "Engineering",
+    icon: `<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>`,
+    skills: ["TypeScript", "Python", "Node.js", "Docker", "CI/CD", "REST APIs"],
+  },
+  {
+    name: "Security & Infra",
+    icon: `<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>`,
+    skills: ["VPN Monitoring", "DNS Security", "Self-Hosting", "WireGuard", "Linux"],
+  },
+];
+
+const industries = ["Sports Betting", "Insurance", "Automotive", "Finance"];
+const languages = [
+  { name: "English", level: "Fluent" },
+  { name: "Italian", level: "Native" },
+  { name: "Spanish", level: "Fluent" },
+];
+const interests = ["Security Enthusiast", "Coffee Addict", "Sci-Fi Fan", "Chess", "Shorinji Kempo", "Linux User"];
+---
+
+<Base title="About | Andrea Gigante" description="Principal Product Manager at Oracle NetSuite. 13+ years bridging business and technology across finance, sports betting, insurance, and automotive.">
+  <!-- Header -->
+  <section class="py-16 sm:py-24">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-12 items-start">
+        <!-- Photo -->
+        <div class="md:col-span-1">
+          <div class="aspect-square rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] flex items-center justify-center overflow-hidden">
+            <img
+              src="/images/profile.png"
+              alt="Andrea Gigante"
+              class="w-full h-full object-cover"
+            />
+          </div>
+          <div class="mt-6 space-y-2">
+            <p class="text-sm text-[var(--color-text-muted)]" style="font-family: var(--font-mono);">
+              Principal Product Manager
+            </p>
+            <p class="text-sm text-[var(--color-text-muted)]" style="font-family: var(--font-mono);">
+              Oracle NetSuite
+            </p>
+            <p class="text-sm text-[var(--color-text-muted)]" style="font-family: var(--font-mono);">
+              Málaga, Spain
+            </p>
+          </div>
+        </div>
+
+        <!-- Bio -->
+        <div class="md:col-span-2">
+          <h1 class="text-3xl sm:text-4xl font-bold mb-6" style="font-family: var(--font-heading);">
+            About <span class="text-[var(--color-accent)]">Andrea Gigante</span>
+          </h1>
+
+          <div class="prose prose-lg max-w-none text-[var(--color-text-muted)] space-y-4">
+            <p>
+              I'm a Principal Product Manager with 13+ years of experience bridging business acumen and technical knowledge. I've led products across sports betting, insurance, automotive, and finance, turning complex problems into solutions that ship.
+            </p>
+            <p>
+              But I'm more than a PM title. I build real tools: MCP servers with 62 tools, multi-agent orchestration systems, VPN monitoring platforms, and automated financial pipelines. I believe the best product decisions come from understanding the systems you're building on.
+            </p>
+            <p>
+              My background spans Scrum and Kanban expertise, roadmap redesign, and leading waterfall-to-agile transitions. I'm the bridge between "what the business needs" and "how the technology works."
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Skills -->
+  <section class="py-16 border-t border-[var(--color-border)]">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h2 class="text-2xl sm:text-3xl font-bold mb-8" style="font-family: var(--font-heading);">Skills & Expertise</h2>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {skillGroups.map(group => (
+          <div class="p-5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-[var(--color-accent)]" set:html={group.icon} />
+              <h3 class="text-sm font-semibold uppercase tracking-wider text-[var(--color-accent)]" style="font-family: var(--font-mono);">
+                {group.name}
+              </h3>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              {group.skills.map(skill => (
+                <span class="text-xs px-2.5 py-1 rounded-full bg-[var(--color-bg)] text-[var(--color-text-muted)] border border-[var(--color-border)]">
+                  {skill}
+                </span>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <!-- Industries -->
+      <div class="mt-8 p-5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="text-[var(--color-accent)]">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" /></svg>
+          </span>
+          <h3 class="text-sm font-semibold uppercase tracking-wider text-[var(--color-accent)]" style="font-family: var(--font-mono);">
+            Industries
+          </h3>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          {industries.map(industry => (
+            <span class="text-xs px-2.5 py-1 rounded-full bg-[var(--color-bg)] text-[var(--color-text-muted)] border border-[var(--color-border)]">
+              {industry}
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- The Skytale Story -->
+  <section class="py-16 border-t border-[var(--color-border)]">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+        <!-- Text -->
+        <div>
+          <h2 class="text-2xl sm:text-3xl font-bold mb-6" style="font-family: var(--font-heading);">
+            Why <span class="text-[var(--color-accent)]">Skytale</span>.it?
+          </h2>
+
+          <div class="space-y-4 text-[var(--color-text-muted)]">
+            <p>
+              The name comes from the <strong class="text-[var(--color-text)]">scytale</strong> (σκυτάλη), an ancient Greek transposition cipher used by Spartans during military campaigns. A parchment strip wrapped around a cylinder of specific diameter; only someone with an identical cylinder could decode the message.
+            </p>
+            <p>
+              As a kid, I used to practice steganography with friends, hiding messages in plain sight. That early fascination with encryption and security never left me.
+            </p>
+            <p>
+              <strong class="text-[var(--color-text)]">Skytale</strong> represents my passion for security and encryption. <strong class="text-[var(--color-text)]">.it</strong> stands for Italy, my country of origin, and Information Technology, my field.
+            </p>
+          </div>
+
+          <blockquote class="mt-6 pl-4 border-l-2 border-[var(--color-accent)] text-[var(--color-text-muted)] italic">
+            "For me, Skytale symbolizes clarity, precision, and secure communication - values I strive to embody in my professional journey."
+          </blockquote>
+        </div>
+
+        <!-- Scytale illustration -->
+        <div class="flex justify-center">
+          <div class="w-full max-w-sm rounded-2xl overflow-hidden border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
+            <img
+              src="/images/skytale.png"
+              alt="Scytale - ancient Greek transposition cipher used by Spartans"
+              class="w-full h-auto rounded-lg"
+            />
+            <p class="mt-3 text-xs text-center text-[var(--color-text-muted)]" style="font-family: var(--font-mono);">
+              σκυτάλη - Spartan transposition cipher
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Languages & Interests -->
+  <section class="py-16 border-t border-[var(--color-border)]">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Languages -->
+        <div class="p-5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]">
+          <h3 class="text-sm font-semibold uppercase tracking-wider text-[var(--color-accent)] mb-4" style="font-family: var(--font-mono);">
+            Languages
+          </h3>
+          <div class="space-y-3">
+            {languages.map(lang => (
+              <div class="flex justify-between items-center">
+                <span class="text-[var(--color-text)]">{lang.name}</span>
+                <span class="text-xs text-[var(--color-text-muted)]" style="font-family: var(--font-mono);">{lang.level}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <!-- Interests -->
+        <div class="p-5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]">
+          <h3 class="text-sm font-semibold uppercase tracking-wider text-[var(--color-accent)] mb-4" style="font-family: var(--font-mono);">
+            Beyond Work
+          </h3>
+          <div class="flex flex-wrap gap-2">
+            {interests.map(interest => (
+              <span class="text-sm px-3 py-1.5 rounded-full bg-[var(--color-bg)] text-[var(--color-text-muted)] border border-[var(--color-border)]">
+                {interest}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>

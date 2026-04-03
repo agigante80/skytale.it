@@ -1,0 +1,55 @@
+<!-- Cookie consent banner -->
+<div id="cookie-banner" class="fixed bottom-0 left-0 right-0 z-50 hidden">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-4">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-lg">
+      <p class="text-sm text-[var(--color-text-muted)] flex-1">
+        This site uses cookies for analytics (Google Analytics) to understand how visitors use the site. No personal data is sold or shared with third parties. <a href="/privacy" class="text-[var(--color-accent)] hover:underline">Privacy Policy</a>
+      </p>
+      <div class="flex gap-2 shrink-0">
+        <button id="cookie-reject" class="px-4 py-2 text-sm font-medium rounded-lg border border-[var(--color-border)] text-[var(--color-text-muted)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] transition-colors cursor-pointer">
+          Reject
+        </button>
+        <button id="cookie-accept" class="px-4 py-2 text-sm font-medium rounded-lg bg-[var(--color-accent)] text-[var(--color-bg)] hover:bg-[var(--color-accent-hover)] transition-colors cursor-pointer">
+          Accept
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script is:inline data-astro-rerun>
+  (function() {
+    var consent = localStorage.getItem('cookie-consent');
+    var banner = document.getElementById('cookie-banner');
+
+    if (consent === 'accepted') {
+      loadGA();
+    } else if (consent !== 'rejected') {
+      banner.classList.remove('hidden');
+    }
+
+    document.getElementById('cookie-accept').onclick = function() {
+      localStorage.setItem('cookie-consent', 'accepted');
+      banner.classList.add('hidden');
+      loadGA();
+    };
+
+    document.getElementById('cookie-reject').onclick = function() {
+      localStorage.setItem('cookie-consent', 'rejected');
+      banner.classList.add('hidden');
+    };
+
+    function loadGA() {
+      if (window.gaLoaded) return;
+      window.gaLoaded = true;
+      var s = document.createElement('script');
+      s.async = true;
+      s.src = 'https://www.googletagmanager.com/gtag/js?id=G-LE46GCTSM7';
+      document.head.appendChild(s);
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-LE46GCTSM7');
+    }
+  })();
+</script>
