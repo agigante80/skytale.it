@@ -1,0 +1,150 @@
+---
+import '../styles/global.css';
+import { ClientRouter } from 'astro:transitions';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import CookieConsent from '../components/CookieConsent.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  ogImage?: string;
+  schema?: Record<string, unknown> | Record<string, unknown>[];
+}
+
+const {
+  title,
+  description = "Andrea Gigante - Principal Product Manager. Building real tools, shipping code, bridging innovation and business value.",
+  ogImage = "/og-default.png",
+  schema,
+} = Astro.props;
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+
+const baseSchema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://www.skytale.it/#website",
+      "url": "https://www.skytale.it",
+      "name": "Skytale.it",
+      "description": description,
+      "publisher": { "@id": "https://www.skytale.it/#andrea" },
+    },
+    {
+      "@type": "Person",
+      "@id": "https://www.skytale.it/#andrea",
+      "name": "Andrea Gigante",
+      "url": "https://www.skytale.it",
+      "image": "https://www.skytale.it/images/profile.png",
+      "jobTitle": "Principal Product Manager",
+      "worksFor": {
+        "@type": "Organization",
+        "name": "Oracle NetSuite",
+        "url": "https://www.netsuite.com",
+      },
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Málaga",
+        "addressCountry": "ES",
+      },
+      "knowsLanguage": ["en", "it", "es"],
+      "sameAs": [
+        "https://linkedin.com/in/agigante/",
+        "https://github.com/agigante80",
+      ],
+    },
+  ],
+};
+
+const allSchemas = schema
+  ? Array.isArray(schema) ? [baseSchema, ...schema] : [baseSchema, schema]
+  : [baseSchema];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="/favicon.ico" sizes="16x16 32x32" />
+    <link rel="icon" type="image/png" href="/favicon-192.png" sizes="192x192" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="generator" content={Astro.generator} />
+
+    <!-- SEO -->
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalURL} />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImage} />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <!-- Verification tags -->
+    <meta name="google-site-verification" content="e9ldlWE1cGp9uRxCGRq0kcLMMOfTmTz0yWkUT9bzEMo" />
+    <meta name="msvalidate.01" content="365AF03E7B8A580F183CF123919A511A" />
+    <meta name="p:domain_verify" content="b66de94b560f45599c7f53104841cd20" />
+
+    {allSchemas.map(s => (
+      <script type="application/ld+json" set:html={JSON.stringify(s)} />
+    ))}
+
+    <ClientRouter />
+
+    <!-- Theme: apply before paint to prevent flash -->
+    <script is:inline>
+      (function() {
+        var stored = localStorage.getItem('theme');
+        var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        var isDark = stored ? stored === 'dark' : prefersDark;
+        if (!isDark) document.documentElement.classList.add('light');
+        else document.documentElement.classList.remove('light');
+      })();
+    </script>
+  </head>
+  <body class="min-h-screen flex flex-col">
+    <Nav />
+
+    <!-- Theme toggle logic -->
+    <script is:inline data-astro-rerun>
+      (function() {
+        function updateIcons() {
+          var isLight = document.documentElement.classList.contains('light');
+          document.querySelectorAll('[data-theme-sun]').forEach(function(el) {
+            el.style.display = isLight ? 'none' : '';
+          });
+          document.querySelectorAll('[data-theme-moon]').forEach(function(el) {
+            el.style.display = isLight ? '' : 'none';
+          });
+        }
+
+        document.querySelectorAll('[data-theme-toggle]').forEach(function(btn) {
+          btn.onclick = function() {
+            document.documentElement.classList.toggle('light');
+            var isLight = document.documentElement.classList.contains('light');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            updateIcons();
+          };
+        });
+
+        updateIcons();
+      })();
+    </script>
+    <main class="flex-1">
+      <slot />
+    </main>
+    <Footer />
+    <CookieConsent />
+  </body>
+</html>

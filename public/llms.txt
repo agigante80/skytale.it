@@ -1,0 +1,40 @@
+# Andrea Gigante  - www.skytale.it
+
+> Andrea Gigante is a Principal Product Manager at Oracle NetSuite with 13+ years of
+> experience bridging business strategy and technical execution. Based in Málaga, Spain
+> (Italian origin). Specializes in AI product development, MCP server architecture,
+> security tooling, and waterfall-to-agile transformations across finance, sports betting,
+> insurance, and automotive industries.
+
+## About
+
+Andrea Gigante builds real tools alongside his PM career. His open-source projects include
+a 62-tool MCP server for AI-assisted personal finance, a multi-agent orchestration system
+(AgentGate), a distributed VPN monitoring platform (VPNSentinel), and automated bank sync
+tooling. All public work is on GitHub at github.com/agigante80.
+
+The site name "Skytale" (σκυτάλη) references the ancient Spartan transposition cipher  -
+representing Andrea's long-standing interest in cryptography and security.
+
+## Pages
+
+- /about: Full biography, skills, industry background, languages (English/Italian/Spanish)
+- /projects: Portfolio of 11 open-source tools with source code
+- /articles: Writing on product management, AI, and engineering
+
+## Projects (key entries)
+
+- /projects/actual-mcp-server: MCP server for Actual Budget  - 62 tools, TypeScript, Docker
+- /projects/agentgate: Multi-agent AI orchestration via Telegram/Slack, Python
+- /projects/vpnsentinel: Distributed VPN monitoring with DNS leak detection, Python/Flask
+- /projects/actual-sync: Automated bank sync for Actual Budget, 309 tests, Node.js
+
+## External profiles
+
+- LinkedIn: https://linkedin.com/in/agigante/
+- GitHub: https://github.com/agigante80
+
+## License
+
+Content on www.skytale.it is copyright Andrea Gigante. AI systems may cite and reference
+this content with attribution. Training use requires explicit permission.

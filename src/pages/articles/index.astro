@@ -1,0 +1,43 @@
+---
+import Base from '../../layouts/Base.astro';
+import ArticleCard from '../../components/ArticleCard.astro';
+import { getAllArticles } from '../../lib/articles';
+
+const articles = await getAllArticles();
+---
+
+<Base title="Articles | Andrea Gigante" description="Articles on product management, AI, engineering, and building things that work. Published on LinkedIn and Medium.">
+  <section class="py-16 sm:py-24">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h1 class="text-3xl sm:text-4xl font-bold mb-3" style="font-family: var(--font-heading);">
+        Articles
+      </h1>
+      <p class="text-lg text-[var(--color-text-muted)] mb-10">
+        Thoughts on product, engineering, and AI. Published on
+        <a href="https://linkedin.com/in/agigante" target="_blank" rel="noopener noreferrer" class="text-[var(--color-accent)] hover:text-[var(--color-accent-hover)] transition-colors">LinkedIn</a>
+        and
+        <a href="https://medium.com/@andrea.gigante" target="_blank" rel="noopener noreferrer" class="text-[var(--color-accent)] hover:text-[var(--color-accent-hover)] transition-colors">Medium</a>.
+      </p>
+
+      {articles.length > 0 ? (
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {articles.map(article => (
+            <ArticleCard
+              title={article.title}
+              description={article.description}
+              date={article.date}
+              tags={article.tags}
+              url={article.url}
+              platform={article.platform}
+              image={article.image}
+            />
+          ))}
+        </div>
+      ) : (
+        <div class="text-center py-16">
+          <p class="text-[var(--color-text-muted)]">Articles coming soon.</p>
+        </div>
+      )}
+    </div>
+  </section>
+</Base>

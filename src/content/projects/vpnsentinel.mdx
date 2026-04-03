@@ -1,0 +1,37 @@
+---
+title: "VPNSentinel"
+description: "Distributed VPN monitoring system with DNS leak detection, multi-node health checks, and real-time alerting. Ensures your VPN infrastructure stays secure."
+category: "Security"
+tier: 1
+techStack: ["Python", "Flask", "DNS", "Docker"]
+githubUrl: "https://github.com/agigante80/VPNSentinel"
+featured: true
+metrics: "DNS leak detection | Distributed monitoring"
+sortOrder: 3
+---
+
+## What is VPNSentinel?
+
+VPNSentinel is a distributed monitoring system built with Python and Flask that continuously verifies VPN integrity across multiple network vantage points. Unlike basic connectivity checkers that only confirm a VPN tunnel is "up," VPNSentinel actively probes for DNS leaks, verifies traffic routing through the expected exit nodes, monitors latency degradation, and sends real-time alerts when protection gaps are detected.
+
+## The Problem
+
+VPN services can silently fail in ways that are invisible to the user. A DNS leak sends your domain lookups over the ISP's resolver instead of the VPN tunnel  - your browsing history is exposed even though the VPN icon shows "connected." Misconfigured routes can split traffic so that some applications bypass the tunnel entirely. Most monitoring tools check if a VPN is connected but never verify whether it's actually protecting you. I wanted a system that would catch these subtle failures.
+
+## How I Built It
+
+The key insight was that single-node monitoring has a blind spot: if your monitoring node is on the same network as your VPN client, it shares the same failure mode. A DNS leak on the client affects the monitor too. So I designed VPNSentinel with a distributed architecture where monitoring probes run on separate networks and compare results.
+
+Each probe performs three types of checks: DNS resolution comparison (resolving the same domain through the VPN tunnel and through a known public resolver, then comparing results), IP verification (confirming the client's apparent public IP matches the expected VPN exit node), and latency baseline tracking (detecting sudden drops that indicate the tunnel has fallen back to direct routing, which is typically faster but unprotected).
+
+The Flask dashboard aggregates results from all probes and renders a real-time status view. Alert rules are configurable  - you can set thresholds for latency deviation, DNS mismatch counts, and IP changes before an alert fires.
+
+## Architecture
+
+A central Flask server coordinates distributed monitoring nodes. Each node runs independently, performing scheduled health checks and reporting results back via REST API. The server stores historical data for trend analysis and exposes a web dashboard. Docker packaging lets you spin up monitoring nodes on different networks  - a VPS in one country, a home server in another  - to get true multi-vantage-point coverage.
+
+## Impact
+
+- Catches DNS leaks that simple VPN connectivity monitors miss entirely
+- Distributed architecture eliminates the single-point-of-failure problem in VPN monitoring
+- Real-time alerts with configurable thresholds  - no more silently exposed traffic

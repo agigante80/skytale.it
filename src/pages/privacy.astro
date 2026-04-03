@@ -1,0 +1,144 @@
+---
+import Base from '../layouts/Base.astro';
+
+const lastUpdated = '3 April 2026';
+---
+
+<Base title="Privacy Policy | Skytale.it" description="Privacy policy for skytale.it — how we handle cookies, analytics, and your data.">
+  <section class="py-16 sm:py-24">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h1 class="text-3xl sm:text-4xl font-bold mb-2" style="font-family: var(--font-heading);">
+        Privacy <span class="text-[var(--color-accent)]">Policy</span>
+      </h1>
+      <p class="text-sm text-[var(--color-text-muted)] mb-12" style="font-family: var(--font-mono);">
+        Last updated: {lastUpdated}
+      </p>
+
+      <div class="space-y-10 text-[var(--color-text-muted)]">
+        <!-- Intro -->
+        <div>
+          <p>
+            This website, <strong class="text-[var(--color-text)]">skytale.it</strong>, is the personal portfolio of Andrea Gigante. I take your privacy seriously and aim to be fully transparent about how this site handles data.
+          </p>
+        </div>
+
+        <!-- Data Controller -->
+        <div>
+          <h2 class="text-xl font-bold text-[var(--color-text)] mb-3" style="font-family: var(--font-heading);">Data Controller</h2>
+          <p>
+            Andrea Gigante<br />
+            Contact: <a href="https://linkedin.com/in/agigante" target="_blank" rel="noopener noreferrer" class="text-[var(--color-accent)] hover:underline">LinkedIn</a>
+          </p>
+        </div>
+
+        <!-- What Data -->
+        <div>
+          <h2 class="text-xl font-bold text-[var(--color-text)] mb-3" style="font-family: var(--font-heading);">What Data Is Collected</h2>
+          <p class="mb-3">This is a static website. It does not have user accounts, contact forms, newsletters, or databases. The only data collection occurs through:</p>
+          <ul class="list-disc list-inside space-y-2 ml-2">
+            <li>
+              <strong class="text-[var(--color-text)]">Google Analytics 4</strong> (measurement ID: G-LE46GCTSM7) — collects anonymised usage data such as pages visited, referral source, browser type, and approximate geographic region. IP addresses are anonymised by default in GA4.
+            </li>
+          </ul>
+        </div>
+
+        <!-- Legal Basis -->
+        <div>
+          <h2 class="text-xl font-bold text-[var(--color-text)] mb-3" style="font-family: var(--font-heading);">Legal Basis</h2>
+          <p>
+            Analytics data is collected based on your <strong class="text-[var(--color-text)]">explicit consent</strong> (GDPR Article 6(1)(a)). Google Analytics scripts are only loaded after you click "Accept" on the cookie consent banner. If you reject or ignore the banner, no analytics data is collected.
+          </p>
+        </div>
+
+        <!-- Cookies -->
+        <div>
+          <h2 class="text-xl font-bold text-[var(--color-text)] mb-3" style="font-family: var(--font-heading);">Cookies & Local Storage</h2>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm border border-[var(--color-border)] rounded-lg overflow-hidden">
+              <thead>
+                <tr class="bg-[var(--color-surface)]">
+                  <th class="text-left px-4 py-2 border-b border-[var(--color-border)] text-[var(--color-text)]">Name</th>
+                  <th class="text-left px-4 py-2 border-b border-[var(--color-border)] text-[var(--color-text)]">Type</th>
+                  <th class="text-left px-4 py-2 border-b border-[var(--color-border)] text-[var(--color-text)]">Category</th>
+                  <th class="text-left px-4 py-2 border-b border-[var(--color-border)] text-[var(--color-text)]">Purpose</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="px-4 py-2 border-b border-[var(--color-border)]" style="font-family: var(--font-mono);">cookie-consent</td>
+                  <td class="px-4 py-2 border-b border-[var(--color-border)]">localStorage</td>
+                  <td class="px-4 py-2 border-b border-[var(--color-border)]">Essential</td>
+                  <td class="px-4 py-2 border-b border-[var(--color-border)]">Stores your cookie consent choice</td>
+                </tr>
+                <tr>
+                  <td class="px-4 py-2 border-b border-[var(--color-border)]" style="font-family: var(--font-mono);">theme</td>
+                  <td class="px-4 py-2 border-b border-[var(--color-border)]">localStorage</td>
+                  <td class="px-4 py-2 border-b border-[var(--color-border)]">Essential</td>
+                  <td class="px-4 py-2 border-b border-[var(--color-border)]">Stores your dark/light mode preference</td>
+                </tr>
+                <tr>
+                  <td class="px-4 py-2 border-b border-[var(--color-border)]" style="font-family: var(--font-mono);">_ga, _ga_*</td>
+                  <td class="px-4 py-2 border-b border-[var(--color-border)]">Cookie</td>
+                  <td class="px-4 py-2 border-b border-[var(--color-border)]">Analytics</td>
+                  <td class="px-4 py-2 border-b border-[var(--color-border)]">Google Analytics — only set after consent</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Third Parties -->
+        <div>
+          <h2 class="text-xl font-bold text-[var(--color-text)] mb-3" style="font-family: var(--font-heading);">Third-Party Services</h2>
+          <p class="mb-3">
+            The only third-party service that receives data from this site is <strong class="text-[var(--color-text)]">Google Analytics</strong> (operated by Google LLC). Google processes this data under their <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" class="text-[var(--color-accent)] hover:underline">Privacy Policy</a> and acts as a data processor under GDPR.
+          </p>
+          <p>
+            All fonts are self-hosted. No external CDNs, advertising networks, social media widgets, or tracking pixels are used.
+          </p>
+        </div>
+
+        <!-- Data Retention -->
+        <div>
+          <h2 class="text-xl font-bold text-[var(--color-text)] mb-3" style="font-family: var(--font-heading);">Data Retention</h2>
+          <p>
+            Google Analytics data is retained for <strong class="text-[var(--color-text)]">14 months</strong> (the GA4 default), after which it is automatically deleted. Local storage entries persist in your browser until you clear them manually.
+          </p>
+        </div>
+
+        <!-- Your Rights -->
+        <div>
+          <h2 class="text-xl font-bold text-[var(--color-text)] mb-3" style="font-family: var(--font-heading);">Your Rights</h2>
+          <p class="mb-3">Under GDPR, you have the right to:</p>
+          <ul class="list-disc list-inside space-y-2 ml-2">
+            <li><strong class="text-[var(--color-text)]">Withdraw consent</strong> — click "Reject" on the cookie banner, or clear your browser's local storage to reset your preference.</li>
+            <li><strong class="text-[var(--color-text)]">Access</strong> — request a copy of any data held about you.</li>
+            <li><strong class="text-[var(--color-text)]">Erasure</strong> — request deletion of your data.</li>
+            <li><strong class="text-[var(--color-text)]">Object</strong> — object to processing of your data.</li>
+            <li><strong class="text-[var(--color-text)]">Lodge a complaint</strong> — with your local data protection authority.</li>
+          </ul>
+          <p class="mt-3">
+            To exercise any of these rights, contact me via <a href="https://linkedin.com/in/agigante" target="_blank" rel="noopener noreferrer" class="text-[var(--color-accent)] hover:underline">LinkedIn</a>.
+          </p>
+        </div>
+
+        <!-- International Transfers -->
+        <div>
+          <h2 class="text-xl font-bold text-[var(--color-text)] mb-3" style="font-family: var(--font-heading);">International Data Transfers</h2>
+          <p>
+            Google Analytics may transfer data to servers outside the European Economic Area. Google relies on Standard Contractual Clauses (SCCs) and the EU-U.S. Data Privacy Framework as the legal mechanism for these transfers.
+          </p>
+        </div>
+
+        <!-- Changes -->
+        <div>
+          <h2 class="text-xl font-bold text-[var(--color-text)] mb-3" style="font-family: var(--font-heading);">Changes to This Policy</h2>
+          <p>
+            This policy may be updated occasionally. The "last updated" date at the top reflects the most recent revision.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>

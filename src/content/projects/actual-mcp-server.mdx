@@ -1,0 +1,35 @@
+---
+title: "Actual MCP Server"
+description: "A production-grade MCP server for Actual Budget with 62 tools, enabling AI assistants to manage budgets, transactions, accounts, and financial reports through natural language."
+category: "AI/MCP"
+tier: 1
+techStack: ["TypeScript", "MCP", "Docker", "Node.js"]
+githubUrl: "https://github.com/agigante80/actual-mcp-server"
+featured: true
+metrics: "62 tools | Production-ready | Docker"
+sortOrder: 1
+---
+
+## What is Actual MCP Server?
+
+Actual MCP Server is a TypeScript implementation of the Model Context Protocol (MCP) that connects AI assistants  - including Claude Desktop and LibreChat  - to the Actual Budget personal finance application. It exposes 62 discrete tools covering the full Actual Budget API surface: account management, transaction creation, budget category configuration, payee management, automated rules, and financial report generation. Deployed via Docker, it enables users to manage their personal finances through natural-language commands to any MCP-compatible AI assistant.
+
+## The Problem
+
+Personal finance tools like Actual Budget are powerful but require manual interaction through a web UI. Users who rely on AI assistants for daily workflows had no standardized way to bridge the gap  - meaning every budget update, transaction entry, or report request required context-switching out of the AI conversation into the Actual Budget interface.
+
+## How I Built It
+
+The main challenge was designing a tool taxonomy that felt intuitive to AI assistants while preserving data integrity. Financial operations are unforgiving  - a misrouted transaction or a deleted category can cascade through months of budget data. I mapped every Actual Budget API endpoint, then grouped them into logical tool families (accounts, transactions, budgets, categories, payees, rules, reports) with consistent naming conventions so an AI model could reason about which tool to use.
+
+Input validation was another key decision. Rather than trusting that the AI would always send well-formed requests, every tool validates its inputs against strict TypeScript schemas before touching the database. This catches malformed dates, negative amounts, and references to non-existent accounts before they cause problems.
+
+## Architecture
+
+The server follows the MCP specification strictly  - exposing a JSON-RPC interface over stdio transport. Each of the 62 tools is a self-contained handler with its own input schema, error handling, and response formatter. Docker packaging ensures the server runs identically across development and production environments, with environment variables controlling the connection to the Actual Budget sync server.
+
+## Impact
+
+- **62 tools** covering the complete Actual Budget API surface  - the most comprehensive MCP server for any personal finance application
+- Production-ready with Docker support and comprehensive error handling
+- Enables natural language budget management: "Show me my spending on groceries this month" or "Create a recurring transaction for rent"
