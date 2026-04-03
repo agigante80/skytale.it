@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Redesign of skytale.it — Andrea Gigante's personal portfolio and articles website. Moving from a dated Jekyll/WordPress single-page site to a modern Astro site on Cloudflare Pages.
+Andrea Gigante's personal portfolio and articles website. Astro static site deployed on Cloudflare Workers.
 
 ### Brand — "Skytale.it"
 The scytale (σκυτάλη) — ancient Greek transposition cipher. Combined with .it (Italy + IT). Strong brand differentiator — keep it prominent in all designs.
@@ -26,6 +26,18 @@ npm run dev        # Start dev server (localhost:4321)
 npm run build      # Production build → dist/
 npm run preview    # Preview production build locally
 ```
+
+## Deployment
+
+Auto-deploys on push to `main` via Cloudflare Workers Builds. Config:
+
+- **Build:** `npm run build` → **Deploy:** `npx wrangler deploy`
+- **Wrangler config:** `wrangler.jsonc` (name: `skytale-it`, static assets from `dist/`)
+- **Env variable:** `NODE_VERSION=22` (set in Cloudflare dashboard)
+- **Production URL:** `https://www.skytale.it`
+- **Workers URL:** `skytale-it.a-gigante.workers.dev`
+- **Preview URLs:** `*-skytale-it.a-gigante.workers.dev` (auto-generated for non-production branches)
+- **Custom headers:** `public/_headers` (CSP, HSTS, security headers — applied by Cloudflare)
 
 ## Architecture
 
@@ -59,12 +71,12 @@ npm run preview    # Preview production build locally
 
 ### Routes
 
-`/` (home), `/about`, `/projects`, `/projects/[id]` (Tier 1 case studies), `/articles`, `/404`
+`/` (home), `/about`, `/projects`, `/projects/[id]` (Tier 1 case studies), `/articles`, `/privacy`, `/404`
 
 ### Static Files of Note
 
 - `public/llms.txt` — AI discoverability file
-- `public/_headers` — Cloudflare Pages custom headers
+- `public/_headers` — Cloudflare custom headers (CSP, HSTS, security)
 - `public/robots.txt` — crawl directives
 - `public/og-default.png` — fallback OG image
 
@@ -84,7 +96,6 @@ npm run preview    # Preview production build locally
 - **Interests:** Security enthusiast, coffee addict, sci-fi fan, chess, Shorinji Kempo, Linux user
 - **GitHub:** github.com/agigante80
 - **LinkedIn:** linkedin.com/in/agigante/
-- **Email:** a.gigante@gmail.com
 
 ## Site Purpose
 

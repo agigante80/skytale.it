@@ -16,7 +16,6 @@ const lastUpdated = '3 April 2026';
 
       <div class="space-y-10 text-[var(--color-text-muted)]">
         <!-- Intro -->
-        <!-- deploy-test-2026-04-03 -->
         <div>
           <p>
             This website, <strong class="text-[var(--color-text)]">skytale.it</strong>, is the personal portfolio of Andrea Gigante. I take your privacy seriously and aim to be fully transparent about how this site handles data.
@@ -92,11 +91,16 @@ const lastUpdated = '3 April 2026';
         <!-- Third Parties -->
         <div>
           <h2 class="text-xl font-bold text-[var(--color-text)] mb-3" style="font-family: var(--font-heading);">Third-Party Services</h2>
-          <p class="mb-3">
-            The only third-party service that receives data from this site is <strong class="text-[var(--color-text)]">Google Analytics</strong> (operated by Google LLC). Google processes this data under their <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" class="text-[var(--color-accent)] hover:underline">Privacy Policy</a> and acts as a data processor under GDPR.
-          </p>
-          <p>
-            All fonts are self-hosted. No external CDNs, advertising networks, social media widgets, or tracking pixels are used.
+          <ul class="list-disc list-inside space-y-4 ml-2">
+            <li>
+              <strong class="text-[var(--color-text)]">Cloudflare</strong> (Cloudflare, Inc.) — This site is hosted on Cloudflare Workers. Cloudflare processes visitor IP addresses and request metadata for content delivery, security, and DDoS protection. This processing occurs on every page load and is based on our <strong class="text-[var(--color-text)]">legitimate interest</strong> in securing and delivering the website (GDPR Article 6(1)(f)). See Cloudflare's <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer" class="text-[var(--color-accent)] hover:underline">Privacy Policy</a>.
+            </li>
+            <li>
+              <strong class="text-[var(--color-text)]">Google Analytics</strong> (Google LLC) — Collects anonymised usage data only after you accept cookies. Google acts as a data processor under GDPR. See Google's <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" class="text-[var(--color-accent)] hover:underline">Privacy Policy</a>.
+            </li>
+          </ul>
+          <p class="mt-4">
+            All fonts are self-hosted. No advertising networks, social media widgets, or tracking pixels are used.
           </p>
         </div>
 
@@ -128,7 +132,7 @@ const lastUpdated = '3 April 2026';
         <div>
           <h2 class="text-xl font-bold text-[var(--color-text)] mb-3" style="font-family: var(--font-heading);">International Data Transfers</h2>
           <p>
-            Google Analytics may transfer data to servers outside the European Economic Area. Google relies on Standard Contractual Clauses (SCCs) and the EU-U.S. Data Privacy Framework as the legal mechanism for these transfers.
+            Both Cloudflare and Google may transfer data to servers outside the European Economic Area. Both rely on Standard Contractual Clauses (SCCs) and the EU-U.S. Data Privacy Framework as the legal mechanisms for these transfers.
           </p>
         </div>
 
