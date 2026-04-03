@@ -22,6 +22,9 @@ Thumbs.db
 .vscode/
 .idea/
 
+# Cloudflare
+.wrangler/
+
 # Claude Code
 .claude/
 
