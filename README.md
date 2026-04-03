@@ -2,7 +2,7 @@
 
 [![Built with Astro](https://astro.badg.es/v2/built-with-astro/small.svg)](https://astro.build)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Deploy: Cloudflare Pages](https://img.shields.io/badge/Deploy-Cloudflare%20Pages-F38020.svg)](https://pages.cloudflare.com)
+[![Deploy: Cloudflare Workers](https://img.shields.io/badge/Deploy-Cloudflare%20Workers-F38020.svg)](https://workers.cloudflare.com)
 
 Personal portfolio and articles website for **Andrea Gigante** — Principal Product Manager, builder, and security enthusiast.
 
@@ -18,7 +18,23 @@ The **scytale** (Greek: σκυτάλη) was an ancient Spartan transposition cip
 - **[Tailwind CSS 4](https://tailwindcss.com)** — Utility-first styling (CSS-first config via `@tailwindcss/vite`)
 - **[MDX](https://mdxjs.com)** — Rich content for project case studies
 - **TypeScript** — Strict mode
-- **Cloudflare Pages** — Hosting and edge delivery
+- **Cloudflare Workers** — Hosting and edge delivery (static assets via `wrangler deploy`)
+
+## Deployment
+
+The site auto-deploys on every push to `main` via Cloudflare Workers Builds.
+
+| Setting | Value |
+|---------|-------|
+| **Build command** | `npm run build` |
+| **Deploy command** | `npx wrangler deploy` |
+| **Output directory** | `dist/` |
+| **Production branch** | `main` |
+| **Node.js version** | `22` (set via `NODE_VERSION` env var) |
+| **Production URL** | [www.skytale.it](https://www.skytale.it) |
+| **Workers URL** | skytale-it.a-gigante.workers.dev |
+
+The Cloudflare configuration lives in `wrangler.jsonc`. Custom headers are defined in `public/_headers`.
 
 ## Getting Started
 
