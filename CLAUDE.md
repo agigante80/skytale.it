@@ -29,7 +29,7 @@ npm run preview    # Preview production build locally
 
 ## Deployment
 
-Auto-deploys on push to `main` via Cloudflare Workers Builds. Config:
+GitHub Actions (`.github/workflows/build.yml`) runs `npm run build` on all PRs and pushes to `main` as a build validation check. Actual deployment is handled separately by Cloudflare Workers Builds (not GitHub Actions). Config:
 
 - **Build:** `npm run build` → **Deploy:** `npx wrangler deploy`
 - **Wrangler config:** `wrangler.jsonc` (name: `skytale-it`, static assets from `dist/`)
@@ -139,4 +139,4 @@ Showcase practical skills and knowledge to potential future employers. The site 
 
 - `reference/current-site.md` — Content/design inventory from the existing site, needed images list
 - `assets/reference/` — Original profile photos, brand logo, portfolio thumbnails, banner images
-- `scripts/capture_localhost.py` — Screenshot capture utility
+- `scripts/capture_task.py` — Playwright screenshot utility (captures pages at localhost:4321, saves to `screenshots/`)

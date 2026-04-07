@@ -13,6 +13,15 @@ export interface Article {
 // LinkedIn articles - add manually here (LinkedIn has no public article API)
 const linkedinArticles: Article[] = [
   {
+    title: "Learn to Drive AI, Not Build the Engine",
+    description: "Focus on using AI effectively rather than understanding its technical internals — being an AI \"client\" means describing outcomes, not mechanisms.",
+    date: new Date('2026-04-05'),
+    tags: ["Artificial Intelligence", "AI Tools & Skills", "Productivity", "Technology"],
+    url: "https://www.linkedin.com/pulse/learn-drive-ai-build-engine-andrea-gigante-olfne/",
+    platform: 'linkedin',
+    image: "/images/articles/learn-to-drive-ai-not-build-engine.jpg",
+  },
+  {
     title: "Stages of AI-Assisted Development: How My Workflow Evolved",
     description: "A practitioner's account of how AI integration in software development evolved incrementally, from basic coding assistance to structured spec-first workflows and agent-based systems.",
     date: new Date('2026-03-18'),
