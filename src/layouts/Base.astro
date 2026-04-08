@@ -9,6 +9,7 @@ interface Props {
   title: string;
   description?: string;
   ogImage?: string;
+  ogType?: string;
   schema?: Record<string, unknown> | Record<string, unknown>[];
 }
 
@@ -16,10 +17,12 @@ const {
   title,
   description = "Andrea Gigante - Principal Product Manager. Building real tools, shipping code, bridging innovation and business value.",
   ogImage = "/og-default.png",
+  ogType = "website",
   schema,
 } = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const ogImageAbsolute = ogImage.startsWith('http') ? ogImage : new URL(ogImage, Astro.site).toString();
 
 const baseSchema = {
   "@context": "https://schema.org",
@@ -79,17 +82,20 @@ const allSchemas = schema
     <link rel="canonical" href={canonicalURL} />
 
     <!-- Open Graph -->
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={ogType} />
     <meta property="og:url" content={canonicalURL} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta property="og:image" content={ogImage} />
+    <meta property="og:image" content={ogImageAbsolute} />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image" content={ogImageAbsolute} />
+
+    <!-- Extra head content (page-specific meta) -->
+    <slot name="head" />
 
     <!-- Verification tags -->
     <meta name="google-site-verification" content="e9ldlWE1cGp9uRxCGRq0kcLMMOfTmTz0yWkUT9bzEMo" />
