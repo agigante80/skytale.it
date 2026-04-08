@@ -78,6 +78,7 @@ const recentArticles = (await getAllArticles()).slice(0, 3);
               url={article.url}
               platform={article.platform}
               image={article.image}
+              slug={article.slug}
             />
           ))}
         </div>

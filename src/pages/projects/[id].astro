@@ -1,5 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
+import ShareButtons from '../../components/ShareButtons.astro';
 import { getCollection, render } from 'astro:content';
 
 export async function getStaticPaths() {
@@ -29,7 +30,9 @@ const softwareSchema = {
   "name": project.data.title,
   "description": project.data.description,
   "author": { "@id": "https://www.skytale.it/#andrea" },
-  "programmingLanguage": project.data.techStack[0],
+  "programmingLanguage": project.data.techStack,
+  "url": `https://www.skytale.it/projects/${project.id}/`,
+  "mainEntityOfPage": { "@type": "WebPage", "@id": `https://www.skytale.it/projects/${project.id}/` },
   ...(project.data.githubUrl ? { "codeRepository": project.data.githubUrl } : {}),
 };
 ---
@@ -98,6 +101,11 @@ const softwareSchema = {
             </a>
           )}
         </div>
+
+        <ShareButtons
+          url={`https://www.skytale.it/projects/${project.id}/`}
+          title={project.data.title}
+        />
       </div>
 
       <!-- Content -->
