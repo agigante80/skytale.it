@@ -23,7 +23,7 @@ const linkedinArticles: Article[] = [
     platform: 'linkedin',
     image: "/images/articles/i-let-ai-write-100-two-blogs-heres-what-learned-andrea-gigante-gmgse.jpg",
     slug: "i-let-ai-write-100-two-blogs-heres-what-learned-andrea-gigante-gmgse",
-    tldr: "I built ContentGen-AI to run two blogs entirely autonomously. AI wrote every article, generated every image, and managed SEO tags for months. The system delivered consistent volume, but the content was lifeless: no genuine perspective, no human voice. The core lesson: AI is an outstanding pair programmer and a poor solo author. The evolved approach is human-directed, AI-assisted: I bring the ideas and judgment, and AI handles the heavy lifting.",
+    tldr: "Running two fully automated blogs for months revealed that AI did not fail at writing. It failed at having something worth saying. The bottleneck was the brief: generic prompts with no personal voice, no real opinions, and no specific angles produced content that was technically correct but empty. Providing AI with style profiles, first-person context, and concrete angles transformed the output from filler to something genuinely authored.",
   },
   {
     title: "From AI Chat Rooms to AI Councils",
