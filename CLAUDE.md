@@ -49,11 +49,14 @@ GitHub Actions (`.github/workflows/build.yml`) runs `npm run build` on all PRs a
 - LinkedIn articles are hardcoded in a `linkedinArticles` array (LinkedIn has no public API)
 - Medium articles are fetched at build time via RSS (`rss-parser`)
 - `getAllArticles()` merges both sources, sorted by date descending
-- To add a LinkedIn article, add an entry to the array in `src/lib/articles.ts`
+- To add a LinkedIn article, add an entry to the array in `src/lib/articles.ts`. Required fields: `title`, `description`, `date`, `tags`, `url`, `platform: 'linkedin'`, `slug`, `image` (path under `/public/images/articles/`). Optional: `tldr` (one-paragraph summary shown on detail page).
+- Article `slug` is the last path segment of the LinkedIn URL (e.g. `some-title-andrea-gigante-xxxxx`). Image should be placed at `public/images/articles/<slug>.jpg`.
+- Medium articles are fetched at build time from `https://medium.com/feed/@andrea.gigante` via RSS.
+- Use the `add-article` skill (`/add-article`) to automate fetching metadata and adding the entry.
 
 ### Layout & Theming
 
-`src/layouts/Base.astro` is the single layout — handles SEO meta, OG tags, nav, footer, JSON-LD schema injection, and view transitions (`ClientRouter`). Props: `title` (required), `description`, `ogImage`, `schema` (pass structured data objects to inject `<script type="application/ld+json">`).
+`src/layouts/Base.astro` is the single layout — handles SEO meta, OG tags, nav, footer, cookie consent, JSON-LD schema injection, and view transitions (`ClientRouter`). Props: `title` (required), `description`, `ogImage`, `ogType` (defaults to `"website"`), `schema` (pass structured data objects to inject `<script type="application/ld+json">`).
 
 **Dark mode is default.** Light mode activates by adding `html.light` class. Theme toggle persists to `localStorage`. An inline `<script>` in `<head>` prevents FOUC by reading the preference before paint. A second `data-astro-rerun` script handles toggle button behavior and survives Astro view transitions.
 
@@ -66,17 +69,23 @@ GitHub Actions (`.github/workflows/build.yml`) runs `npm run build` on all PRs a
 
 ### Integrations
 
-- `@astrojs/sitemap` — auto-generates sitemap (canonical site URL: `https://www.skytale.it` — note: uses `www`)
+- `@astrojs/sitemap` — auto-generates sitemap (canonical site URL: `https://www.skytale.it` — note: uses `www`); filter in `astro.config.mjs` excludes `/404` routes
 - `@astrojs/mdx` — MDX support for project content
+
+### Key Components
+
+- `ShareButtons.astro` — LinkedIn + Twitter share links rendered as plain `<a target="_blank">` anchors (no external JS library)
+- `FilterTabs.astro` — client-side project filtering by category on `/projects`
+- `CookieConsent.astro` — cookie banner included in `Base.astro` on every page
 
 ### Routes
 
-`/` (home), `/about`, `/projects`, `/projects/[id]` (Tier 1 case studies), `/articles`, `/privacy`, `/404`
+`/` (home), `/about`, `/projects`, `/projects/[id]` (Tier 1 case studies), `/articles`, `/articles/[slug]` (article detail with schema + breadcrumbs), `/privacy`, `/404`
 
 ### Static Files of Note
 
 - `public/llms.txt` — AI discoverability file
-- `public/_headers` — Cloudflare custom headers (CSP, HSTS, security)
+- `public/_headers` — Cloudflare custom headers (CSP, HSTS, security). **When adding external scripts or fonts, update the CSP here too** — missing entries silently block resources (e.g. `cdn.jsdelivr.net` had to be added after it was blocked). Current CSP allows `unsafe-inline` for scripts/styles, whitelists Google Tag Manager and `cdn.jsdelivr.net` in `script-src`, and allows `google-analytics.com` / `analytics.google.com` in `connect-src`.
 - `public/robots.txt` — crawl directives
 - `public/og-default.png` — fallback OG image
 
@@ -128,6 +137,7 @@ Showcase practical skills and knowledge to potential future employers. The site 
 - **SEO Inspector MCP** — Configured in `.mcp.json`. Page-level SEO analysis.
 - **claude-seo skill** — Installed globally. Run `/seo audit https://skytale.it` for full audits.
 - **Lovart AI** (lovart.ai) — External branding tool. Andrea generates images externally — provide prompts when needed.
+- **add-article skill** — `/add-article` fetches LinkedIn article metadata, downloads cover image, and adds entry to `articles.ts`.
 
 ## Content Guardrails
 
@@ -139,4 +149,5 @@ Showcase practical skills and knowledge to potential future employers. The site 
 
 - `reference/current-site.md` — Content/design inventory from the existing site, needed images list
 - `assets/reference/` — Original profile photos, brand logo, portfolio thumbnails, banner images
-- `scripts/capture_task.py` — Playwright screenshot utility (captures pages at localhost:4321, saves to `screenshots/`)
+- `scripts/capture_task.py` — Playwright screenshot utility (captures specific pages: `/privacy`, footer area, cookie banner)
+- `scripts/capture_localhost.py` — Captures desktop + mobile screenshots of homepage, including theme toggle before/after; saves to `screenshots/`
