@@ -12,14 +12,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Andrea Gigante's personal portfolio and articles website. Astro static site deployed on Cloudflare Workers.
 
-### Brand — "Skytale.it"
-The scytale (σκυτάλη) — ancient Greek transposition cipher. Combined with .it (Italy + IT). Strong brand differentiator — keep it prominent in all designs.
+### Brand: "Skytale.it"
+The scytale (σκυτάλη) is an ancient Greek transposition cipher. Combined with .it (Italy + IT). Strong brand differentiator; keep it prominent in all designs.
 
 ## Tech Stack
 
-- **Astro 6.x** — static site generation with content collections
-- **Tailwind CSS 4.x** — utility-first styling via `@tailwindcss/vite` (v4 uses CSS-first config, not `tailwind.config.js`)
-- **MDX** — rich content for projects via `@astrojs/mdx`
+- **Astro 6.x**: static site generation with content collections
+- **Tailwind CSS 4.x**: utility-first styling via `@tailwindcss/vite` (v4 uses CSS-first config, not `tailwind.config.js`)
+- **MDX**: rich content for projects via `@astrojs/mdx`
 - **TypeScript** (strict mode, extends `astro/tsconfigs/strict`)
 - **Node.js >=22.12.0** required
 
@@ -43,7 +43,7 @@ GitHub Actions (`.github/workflows/build.yml`) runs `npm run build` on all PRs a
 - **Production URL:** `https://www.skytale.it`
 - **Workers URL:** `skytale-it.a-gigante.workers.dev`
 - **Preview URLs:** `*-skytale-it.a-gigante.workers.dev` (auto-generated for non-production branches)
-- **Custom headers:** `public/_headers` (CSP, HSTS, security headers — applied by Cloudflare)
+- **Custom headers:** `public/_headers` (CSP, HSTS, security headers, applied by Cloudflare)
 
 ## Architecture
 
@@ -62,7 +62,7 @@ GitHub Actions (`.github/workflows/build.yml`) runs `npm run build` on all PRs a
 
 ### Layout & Theming
 
-`src/layouts/Base.astro` is the single layout — handles SEO meta, OG tags, nav, footer, cookie consent, JSON-LD schema injection, and view transitions (`ClientRouter`). Props: `title` (required), `description`, `ogImage`, `ogType` (defaults to `"website"`), `schema` (pass structured data objects to inject `<script type="application/ld+json">`).
+`src/layouts/Base.astro` is the single layout that handles SEO meta, OG tags, nav, footer, cookie consent, JSON-LD schema injection, and view transitions (`ClientRouter`). Props: `title` (required), `description`, `ogImage`, `ogType` (defaults to `"website"`), `schema` (pass structured data objects to inject `<script type="application/ld+json">`).
 
 **Dark mode is default.** Light mode activates by adding `html.light` class. Theme toggle persists to `localStorage`. An inline `<script>` in `<head>` prevents FOUC by reading the preference before paint. A second `data-astro-rerun` script handles toggle button behavior and survives Astro view transitions.
 
@@ -70,19 +70,19 @@ GitHub Actions (`.github/workflows/build.yml`) runs `npm run build` on all PRs a
 
 `src/styles/global.css` defines design tokens via Tailwind v4's `@theme` directive and CSS custom properties on `:root` / `html.light`. Components use `var(--color-*)` references directly in Tailwind classes (e.g., `text-[var(--color-accent)]`).
 
-- **Fonts:** Space Grotesk (headings), Inter (body), JetBrains Mono (code/tech labels) — via `@fontsource-variable`
+- **Fonts:** Space Grotesk (headings), Inter (body), JetBrains Mono (code/tech labels), loaded via `@fontsource-variable`
 - **Colors:** Teal accent `#82bfce`, dark slate backgrounds `#0f172a`/`#1e293b`, amber CTA `#f59e0b`
 
 ### Integrations
 
-- `@astrojs/sitemap` — auto-generates sitemap (canonical site URL: `https://www.skytale.it` — note: uses `www`); filter in `astro.config.mjs` excludes `/404` routes
-- `@astrojs/mdx` — MDX support for project content
+- `@astrojs/sitemap`: auto-generates sitemap (canonical site URL: `https://www.skytale.it`, uses `www`); filter in `astro.config.mjs` excludes `/404` routes
+- `@astrojs/mdx`: MDX support for project content
 
 ### Key Components
 
-- `ShareButtons.astro` — LinkedIn + Twitter share links rendered as plain `<a target="_blank">` anchors (no external JS library)
-- `FilterTabs.astro` — client-side project filtering by category on `/projects`
-- `CookieConsent.astro` — cookie banner included in `Base.astro` on every page
+- `ShareButtons.astro`: LinkedIn + Twitter share links rendered as plain `<a target="_blank">` anchors (no external JS library)
+- `FilterTabs.astro`: client-side project filtering by category on `/projects`
+- `CookieConsent.astro`: cookie banner included in `Base.astro` on every page
 
 ### Routes
 
@@ -90,10 +90,10 @@ GitHub Actions (`.github/workflows/build.yml`) runs `npm run build` on all PRs a
 
 ### Static Files of Note
 
-- `public/llms.txt` — AI discoverability file
-- `public/_headers` — Cloudflare custom headers (CSP, HSTS, security). **When adding external scripts or fonts, update the CSP here too** — missing entries silently block resources (e.g. `cdn.jsdelivr.net` had to be added after it was blocked). Current CSP allows `unsafe-inline` for scripts/styles, whitelists Google Tag Manager and `cdn.jsdelivr.net` in `script-src`, and allows `google-analytics.com` / `analytics.google.com` in `connect-src`.
-- `public/robots.txt` — crawl directives
-- `public/og-default.png` — fallback OG image
+- `public/llms.txt`: AI discoverability file
+- `public/_headers`: Cloudflare custom headers (CSP, HSTS, security). **When adding external scripts or fonts, update the CSP here too.** Missing entries silently block resources (e.g. `cdn.jsdelivr.net` had to be added after it was blocked). Current CSP allows `unsafe-inline` for scripts/styles, whitelists Google Tag Manager and `cdn.jsdelivr.net` in `script-src`, and allows `google-analytics.com` / `analytics.google.com` in `connect-src`.
+- `public/robots.txt`: crawl directives
+- `public/og-default.png`: fallback OG image
 
 ## Design System
 
@@ -114,46 +114,46 @@ GitHub Actions (`.github/workflows/build.yml`) runs `npm run build` on all PRs a
 
 ## Site Purpose
 
-Showcase practical skills and knowledge to potential future employers. The site should demonstrate that Andrea is more than a PM title — he builds real tools, understands infrastructure, and ships code.
+Showcase practical skills and knowledge to potential future employers. The site should demonstrate that Andrea is more than a PM title. He builds real tools, understands infrastructure, and ships code.
 
 ## GitHub Projects (for portfolio section)
 
 ### Public (can link directly)
-- **actual-mcp-server** — MCP server for Actual Budget, 62 tools, TypeScript, Docker
-- **AgentGate** — Remote AI CLI control via Telegram/Slack, multi-agent orchestration, Python
-- **Actual-sync** — Automated bank sync for Actual Budget, Node.js, Docker, 309 tests
-- **VPNSentinel** — Distributed VPN monitoring, DNS leak detection, Python, Flask
-- **SafeHarbor-Media-Stack** — Self-hosted media stack on Synology NAS, Docker Compose
-- **vibe-coding-prompts** — Curated AI meta-prompts for dev workflows
-- **ContentGen-AI** — AI blog content pipeline, OpenAI API, Python
-- **galena_es** — AI-generated minerals blog (galena.es), Jekyll + ContentGen-AI
-- **OndaHertz_es** — AI-generated ham radio blog (ondahertz.es), Jekyll + ContentGen-AI
-- **pic2vid** — Image-to-video converter, Bash/FFmpeg
-- **qr-with-icon** — QR code generator with custom icons, Python
-- **backup_skytale_it** — Backup of current site
-- **agigante-creative-theme-jekyll** — Current site's Jekyll theme
+- **actual-mcp-server**: MCP server for Actual Budget, 62 tools, TypeScript, Docker
+- **AgentGate**: Remote AI CLI control via Telegram/Slack, multi-agent orchestration, Python
+- **Actual-sync**: Automated bank sync for Actual Budget, Node.js, Docker, 309 tests
+- **VPNSentinel**: Distributed VPN monitoring, DNS leak detection, Python, Flask
+- **SafeHarbor-Media-Stack**: Self-hosted media stack on Synology NAS, Docker Compose
+- **vibe-coding-prompts**: Curated AI meta-prompts for dev workflows
+- **ContentGen-AI**: AI blog content pipeline, OpenAI API, Python
+- **galena_es**: AI-generated minerals blog (galena.es), Jekyll + ContentGen-AI
+- **OndaHertz_es**: AI-generated ham radio blog (ondahertz.es), Jekyll + ContentGen-AI
+- **pic2vid**: Image-to-video converter, Bash/FFmpeg
+- **qr-with-icon**: QR code generator with custom icons, Python
+- **backup_skytale_it**: Backup of current site
+- **agigante-creative-theme-jekyll**: Current site's Jekyll theme
 
 
 ## Tools Available
 
-- **Figma MCP** — Not yet configured. To install:
+- **Figma MCP**: Not yet configured. To install:
   ```bash
   claude mcp add figma -- npx -y figma-developer-mcp --figma-api-key=<FIGMA_API_KEY>
   ```
-- **SEO Inspector MCP** — Configured in `.mcp.json`. Page-level SEO analysis.
-- **claude-seo skill** — Installed globally. Run `/seo audit https://skytale.it` for full audits.
-- **Lovart AI** (lovart.ai) — External branding tool. Andrea generates images externally — provide prompts when needed.
-- **add-article skill** — `/add-article` fetches LinkedIn article metadata, downloads cover image, and adds entry to `articles.ts`.
+- **SEO Inspector MCP**: Configured in `.mcp.json`. Page-level SEO analysis.
+- **claude-seo skill**: Installed globally. Run `/seo audit https://skytale.it` for full audits.
+- **Lovart AI** (lovart.ai): External branding tool. Andrea generates images externally; provide prompts when needed.
+- **add-article skill**: `/add-article` fetches LinkedIn article metadata, downloads cover image, and adds entry to `articles.ts`.
 
 ## Content Guardrails
 
-- **LinkedIn only** — all new articles target LinkedIn, not Medium
-- **Delete old files, never archive** — keep the repo clean
-- **Practical over theoretical** — show real projects, not abstract claims
+- **LinkedIn only**: all new articles target LinkedIn, not Medium
+- **Delete old files, never archive**: keep the repo clean
+- **Practical over theoretical**: show real projects, not abstract claims
 
 ## Reference Material
 
-- `reference/current-site.md` — Content/design inventory from the existing site, needed images list
-- `assets/reference/` — Original profile photos, brand logo, portfolio thumbnails, banner images
-- `scripts/capture_task.py` — Playwright screenshot utility (captures specific pages: `/privacy`, footer area, cookie banner)
-- `scripts/capture_localhost.py` — Captures desktop + mobile screenshots of homepage, including theme toggle before/after; saves to `screenshots/`
+- `reference/current-site.md`: Content/design inventory from the existing site, needed images list
+- `assets/reference/`: Original profile photos, brand logo, portfolio thumbnails, banner images
+- `scripts/capture_task.py`: Playwright screenshot utility (captures specific pages: `/privacy`, footer area, cookie banner)
+- `scripts/capture_localhost.py`: Captures desktop + mobile screenshots of homepage, including theme toggle before/after; saves to `screenshots/`

@@ -37,7 +37,7 @@ const blueskyUrl = `https://bsky.app/intent/compose?text=${encodeURIComponent(ti
       Twitter
     </a>
 
-    <!-- Bluesky (plain link — not supported by sharer.js) -->
+    <!-- Bluesky (plain link, not supported by sharer.js) -->
     <a
       href={blueskyUrl}
       target="_blank"
@@ -48,7 +48,7 @@ const blueskyUrl = `https://bsky.app/intent/compose?text=${encodeURIComponent(ti
       Bluesky
     </a>
 
-    <!-- Copy link (custom clipboard — not supported by sharer.js) -->
+    <!-- Copy link (custom clipboard, not supported by sharer.js) -->
     <button
       data-share-copy={url}
       class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[var(--color-border)] text-[var(--color-text-muted)] text-xs font-medium hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] transition-colors cursor-pointer"
