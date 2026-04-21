@@ -2,6 +2,12 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Writing Rules
+
+**NEVER use em dashes (--) or en dashes (-) in any content, copy, descriptions, titles, TL;DRs, commit messages, or code comments.** This is a hard rule with no exceptions.
+- Use a hyphen (-) to connect compound words or modifiers (e.g. "AI-assisted", "well-known").
+- Rewrite sentences to avoid constructions that would normally call for an em or en dash. Use a period, a comma, parentheses, a colon, or restructure the sentence instead.
+
 ## Project Overview
 
 Andrea Gigante's personal portfolio and articles website. Astro static site deployed on Cloudflare Workers.

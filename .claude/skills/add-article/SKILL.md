@@ -9,6 +9,10 @@ arguments: url
 
 You are adding a new LinkedIn article to the skytale.it portfolio site.
 
+## Hard rule: no em dashes or en dashes
+
+**NEVER write em dashes (--) or en dashes (-) anywhere** - not in descriptions, titles, TL;DRs, or any other field. Use hyphens (-) only for connecting compound words. Rewrite any sentence that would normally use an em or en dash: use a comma, a colon, parentheses, or split it into two sentences instead.
+
 ## Input
 
 The user provides a LinkedIn article URL (e.g., `https://www.linkedin.com/pulse/...`).
