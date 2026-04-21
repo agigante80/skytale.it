@@ -4,21 +4,21 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Deploy: Cloudflare Workers](https://img.shields.io/badge/Deploy-Cloudflare%20Workers-F38020.svg)](https://workers.cloudflare.com)
 
-Personal portfolio and articles website for **Andrea Gigante** — Principal Product Manager, builder, and security enthusiast.
+Personal portfolio and articles website for **Andrea Gigante**, Principal Product Manager, builder, and security enthusiast.
 
 **Live site:** [www.skytale.it](https://www.skytale.it)
 
 ## About the Name
 
-The **scytale** (Greek: σκυτάλη) was an ancient Spartan transposition cipher — a parchment strip wrapped around a cylinder that only someone with an identical cylinder could decode. **Skytale** represents a passion for security and encryption. **.it** stands for Italy and Information Technology.
+The **scytale** (Greek: σκυτάλη) was an ancient Spartan transposition cipher: a parchment strip wrapped around a cylinder that only someone with an identical cylinder could decode. **Skytale** represents a passion for security and encryption. **.it** stands for Italy and Information Technology.
 
 ## Tech Stack
 
-- **[Astro 6](https://astro.build)** — Static site generation with content collections
-- **[Tailwind CSS 4](https://tailwindcss.com)** — Utility-first styling (CSS-first config via `@tailwindcss/vite`)
-- **[MDX](https://mdxjs.com)** — Rich content for project case studies
-- **TypeScript** — Strict mode
-- **Cloudflare Workers** — Hosting and edge delivery (static assets via `wrangler deploy`)
+- **[Astro 6](https://astro.build)**: Static site generation with content collections
+- **[Tailwind CSS 4](https://tailwindcss.com)**: Utility-first styling (CSS-first config via `@tailwindcss/vite`)
+- **[MDX](https://mdxjs.com)**: Rich content for project case studies
+- **TypeScript**: Strict mode
+- **Cloudflare Workers**: Hosting and edge delivery (static assets via `wrangler deploy`)
 
 ## Deployment
 
@@ -76,11 +76,11 @@ public/           # Static assets, favicons, robots.txt, llms.txt
 
 **Projects** use Astro content collections with MDX files and Zod schema validation. Each project has a tier (1-3) determining its display: Tier 1 gets a full case-study page, Tier 2 a detailed card, Tier 3 a compact grid card.
 
-**Articles** are a hybrid system in `src/lib/articles.ts` — LinkedIn articles are listed manually (no public API), Medium articles are fetched via RSS at build time. Both sources merge and sort by date.
+**Articles** are a hybrid system in `src/lib/articles.ts`. LinkedIn articles are listed manually (no public API), Medium articles are fetched via RSS at build time. Both sources merge and sort by date.
 
 ## Author
 
-**Andrea Gigante** — Principal Product Manager at Oracle NetSuite
+**Andrea Gigante**, Principal Product Manager at Oracle NetSuite
 
 - [LinkedIn](https://linkedin.com/in/agigante)
 - [GitHub](https://github.com/agigante80)
