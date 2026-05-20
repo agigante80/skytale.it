@@ -5,7 +5,9 @@ import FilterTabs from '../../components/FilterTabs.astro';
 import { getCollection } from 'astro:content';
 
 const allProjects = await getCollection('projects');
-const projects = allProjects.sort((a, b) => a.data.sortOrder - b.data.sortOrder);
+const projects = allProjects.sort((a, b) =>
+  a.data.tier - b.data.tier || a.data.title.localeCompare(b.data.title)
+);
 
 const categories = [...new Set(projects.map(p => p.data.category))];
 ---

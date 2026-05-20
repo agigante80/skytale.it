@@ -66,7 +66,7 @@ GitHub Actions (`.github/workflows/build.yml`) runs `npm run build` on all PRs a
 
 ### Content: Two Different Systems
 
-**Projects** use Astro content collections (`src/content/projects/*.mdx`). Schema defined in `src/content.config.ts` with Zod validation. Each project has: title, description, category (enum: AI/MCP, Security, Finance, Utilities, Content), tier (1-3), techStack, optional githubUrl/liveUrl, featured flag, metrics, sortOrder. Tier 1 projects get full case-study pages at `/projects/[id]` via `src/pages/projects/[id].astro`.
+**Projects** use Astro content collections (`src/content/projects/*.mdx`). Schema defined in `src/content.config.ts` with Zod validation. Each project has: title, description, category (enum: AI/MCP, Security, Finance, Utilities, Content), tier (1-3), techStack, optional githubUrl/liveUrl, featured flag, metrics. Every project gets a `/projects/[id]` page via `src/pages/projects/[id].astro`; the MDX body (if present) renders as the case-study content.
 
 **Articles** do NOT use content collections. They're managed in `src/lib/articles.ts` as a hybrid system:
 - LinkedIn articles are hardcoded in a `linkedinArticles` array (LinkedIn has no public API)
@@ -103,7 +103,7 @@ GitHub Actions (`.github/workflows/build.yml`) runs `npm run build` on all PRs a
 
 ### Routes
 
-`/` (home), `/about`, `/projects`, `/projects/[id]` (Tier 1 case studies), `/articles`, `/articles/[slug]` (article detail with schema + breadcrumbs), `/privacy`, `/404`
+`/` (home), `/about`, `/projects`, `/projects/[id]` (one page per project; MDX body, if present, renders as the case study), `/articles`, `/articles/[slug]` (article detail with schema + breadcrumbs), `/privacy`, `/404`
 
 ### Static Files of Note
 
@@ -120,8 +120,11 @@ GitHub Actions (`.github/workflows/build.yml`) runs `npm run build` on all PRs a
 
 ## Design System
 
-- Projects use a 3-tier system: Tier 1 = full case study (MDX body rendered at `/projects/[id]`), Tier 2 = detailed card, Tier 3 = grid card
-- Home page shows `featured: true` projects sorted by `sortOrder`, plus the 3 most recent articles
+- Three orthogonal signals on a project, each doing one job:
+  - **`tier` (1-3)**: ordering only. Lower comes first on the projects index. Visual layout is identical across tiers. Within a tier, projects sort alphabetically by title.
+  - **`featured: true`**: included on the home page; card also spans two columns on the projects index (md+ screens).
+  - **MDX body present**: turns the `/projects/[id]` page into a real case study. Absent body means the detail page shows only the frontmatter (intentional for smaller projects).
+- Home page shows `featured: true` projects ordered by `tier`, plus the 3 most recent articles.
 
 ## Author Context
 
