@@ -42,9 +42,10 @@ Extract:
 Use AskUserQuestion. Do not guess these.
 
 - **category** (single-select from `AI/MCP`, `Security`, `Finance`, `Utilities`, `Content`). Suggest one based on topics.
-- **tier** (single-select 1, 2, 3). Tier 1 means you will write a full case-study body. Tier 2/3 get only frontmatter and an empty body, rendered as a sparse detail page.
+- **tier** (single-select 1, 2, 3). Ordering only: lower tier appears earlier on the projects index. Visual layout is identical across tiers. Independent of whether you write a body.
+- **write a body?** (yes/no). Separate question from tier. A "yes" gets the standard case-study scaffold (next step); a "no" leaves the MDX as frontmatter only and the detail page shows just the header. Convention: bodies usually go with Tier 1 or 2, but the schema does not enforce it.
 - **status** (single-select `active`, `maintained`, `experimental`, `archived`). Default suggestion based on `pushedAt`: < 30 days = active, < 6 months = maintained, otherwise ask. Never silently choose `archived`.
-- **featured** (yes/no). Only ask if tier == 1. If yes, the project shows on the home page.
+- **featured** (yes/no). If yes, the project shows on the home page and gets a wider card on the projects index.
 - **metrics** (optional one-liner like `"62 tools | Production-ready | Docker"`). Pipe-separated, max ~40 chars. Skip if no strong claim to make.
 
 ### 3. Identify the hero image (optional)
@@ -94,9 +95,9 @@ relatedArticles: ["<article-slug-1>", "<article-slug-2>"]
 
 Omit `heroImage`, `metrics`, `liveUrl`, and `relatedArticles` fields entirely if empty (do not leave them as empty strings or empty arrays explicitly, except `relatedArticles` which has a `default([])` in the schema and may be omitted).
 
-### 6. Scaffold the body (Tier 1 only)
+### 6. Scaffold the body (only if the user said "yes" in step 2)
 
-For Tier 1 projects, write a body following this exact structure. Use the section headings as-is for consistency across the portfolio:
+If the user opted into writing a body, scaffold it with the structure below. Use the section headings as-is for consistency across the portfolio. This is independent of tier; a Tier 3 project with a body is allowed.
 
 ```markdown
 ## What is <Project Name>?
@@ -120,7 +121,7 @@ For Tier 1 projects, write a body following this exact structure. Use the sectio
 <2 to 4 bullets. What is true now that was not true before? Hard numbers if you have them ("309 tests", "62 tools", "saves N hours/month"). Avoid claims you cannot back up.>
 ```
 
-For Tier 2 and Tier 3 projects, write **no body**. The detail page will render only the frontmatter, which is intentional.
+If the user said "no", skip this step. The MDX ends after the closing `---` of the frontmatter. The detail page will render only the header, which is intentional for projects you do not want to write a case study about.
 
 ### 7. Self-check before committing
 
@@ -131,7 +132,7 @@ Verify all of the following and report results to the user:
 - [ ] `slug` matches the filename (no trailing extension in slug references)
 - [ ] If `heroImage` is set, the file exists at the referenced path and is > 10KB
 - [ ] If `relatedArticles` is set, every slug exists in `src/lib/articles.ts`
-- [ ] Tier 1 has a body with the standard four (or five) H2 sections; Tier 2/3 has no body
+- [ ] If the user opted into a body, it follows the standard H2 structure (What / Problem / How / optional Architecture / Impact); if not, the MDX has no body and that is intentional
 - [ ] `npm run build` succeeds (this is the schema validator; do not skip it)
 
 If `npm run build` fails on a Zod validation error, fix the frontmatter and rebuild before committing.
