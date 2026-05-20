@@ -99,7 +99,11 @@ Omit `heroImage`, `metrics`, `liveUrl`, and `relatedArticles` fields entirely if
 
 If the user opted into writing a body, scaffold it with the structure below. Use the section headings as-is for consistency across the portfolio. This is independent of tier; a Tier 3 project with a body is allowed.
 
+**Always include the soft-regen marker as the first line of the body.** This tells `/sync-projects` that the body is auto-scaffolded and may be refreshed on future syncs. The user removes the marker when they take ownership (edit to add their own voice). Once removed, future syncs leave the body alone.
+
 ```markdown
+{/* auto-generated body, edit to take ownership */}
+
 ## What is <Project Name>?
 
 <2 to 4 sentences. Name the user, the action, the outcome. Do not just paraphrase the description; go one level deeper into what the tool actually does.>

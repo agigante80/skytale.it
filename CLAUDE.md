@@ -142,7 +142,8 @@ Biographical info, the site's marketing purpose, and the source-of-truth list of
 - **SEO Inspector MCP**: Configured in `.mcp.json`. Page-level SEO analysis.
 - **claude-seo skill**: Installed globally. Run `/seo audit https://skytale.it` for full audits.
 - **add-article skill**: `/add-article <linkedin-url>` fetches metadata, downloads the cover image, and appends to `src/lib/articles.ts`.
-- **add-project skill**: `/add-project <github-url>` scaffolds a project MDX with the standard case-study structure, optionally downloads a hero image, suggests related articles.
+- **add-project skill**: `/add-project <github-url>` scaffolds a project MDX with the standard case-study structure, optionally downloads a hero image, suggests related articles. Bodies it scaffolds carry a soft-regen marker (`{/* auto-generated body, edit to take ownership */}`); remove the marker once you edit the body to claim ownership.
+- **sync-projects skill**: `/sync-projects` reconciles the portfolio against `github.com/agigante80`. Auto-adds new public repos at Tier 3, refreshes existing projects whose GH `pushed_at` is newer than the MDX git mtime, marks newly-archived projects, surfaces tier-vs-popularity mismatches. One commit per sync; revert with `git revert HEAD` if undesired. Hand-edited bodies (no marker) are never touched.
 - **Lovart AI** (lovart.ai): External branding tool. Andrea generates images externally; provide prompts when needed.
 
 ## Content Guardrails
