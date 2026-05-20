@@ -10,4 +10,45 @@ metrics: "Full media stack | Self-hosted | Docker Compose"
 lastSyncedFrom: "2026-05-20T12:52:25Z"
 ---
 
-Complete self-hosted media infrastructure running on a Synology NAS, orchestrated through Docker Compose. The stack includes a media server for streaming, automated content organization that sorts and renames files on arrival, health monitoring for all services, and secure remote access via reverse proxy. Designed as a single `docker-compose.yml` deployment  - one command brings up the entire stack with proper networking, volume mounts, and restart policies.
+## What is SafeHarbor Media Stack?
+
+A Docker Compose configuration that integrates Gluetun (VPN gateway), the Servarr media automation suite (Sonarr, Radarr, Bazarr, Prowlarr, Readarr), qBittorrent, and `VPNSentinel` monitoring, **specifically tested and pinned for Synology DSM 7.x**. The stack is deliberately media-server-agnostic: it acquires and organises content, you bring your own Plex, Jellyfin, or Emby.
+
+## The Problem
+
+Self-hosted media stacks on Synology hit two failure modes that are not visible until they bite.
+
+- **No tunnel monitoring.** If Gluetun drops the VPN, traffic does not automatically fail. Containers continue running and may leak through the host network with no notification. By the time you notice, you have been exposed for hours.
+- **Silent breaking changes between Gluetun versions.** v3.41.0 introduced a netfilter change that requires specific sysctls to work on Synology DSM. Without them, Gluetun enters a restart loop with cryptic errors (`netfilter query: netlink receive: invalid argument`). The fix exists but is not documented in any obvious place.
+
+The stack pre-empts both.
+
+## How I Built It
+
+Three components stand together:
+
+- **Gluetun pinned to v3.40.4.** This is the last version that works out-of-box on Synology without sysctl tweaks. Newer versions are documented in the README with the exact sysctls needed if you want to upgrade.
+- **VPNSentinel** runs inside the tunnel and monitors connection state, DNS leak detection, geolocation, and uptime. It pushes Telegram alerts the moment the tunnel drops or DNS starts leaking. A second VPNSentinel server runs outside the tunnel as an interactive Telegram bot for on-demand status checks (`/status`, `/ping`).
+- **Standard tunnelled networking.** Every protected service uses `network_mode: service:gluetun` so all download and indexer traffic routes through the VPN by definition. No leak path.
+
+Pre-configured for Synology DSM 7.x path conventions (`/volume1/`), PUID/PGID handling, and DS220+ as the tested hardware baseline.
+
+## Architecture
+
+```
+Host network
+└── Gluetun VPN gateway
+    ├── qBittorrent, Sonarr, Radarr, Bazarr, Prowlarr,
+    │   Readarr, Jackett, FlareSolverr (all share Gluetun's namespace)
+    └── VPNSentinel client (monitors from inside the tunnel)
+                │
+                └── alerts to external VPNSentinel server + Telegram bot
+```
+
+Comparison against other popular media stacks in the README makes the trade-offs explicit: this stack chooses VPN safety and Synology compatibility over a polished UI dashboard, and stays opinion-free on which media server you point at it.
+
+## Impact
+
+- A documented, working Synology DS220+ stack with version pinning that survives Gluetun upgrades.
+- DNS leak detection and Telegram alerts via VPNSentinel, integrated by default.
+- Media-server-agnostic by design: every other comparable stack assumes Plex; this one does not.
