@@ -2,6 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import ShareButtons from '../../components/ShareButtons.astro';
 import { getCollection, render } from 'astro:content';
+import { getAllArticles } from '../../lib/articles';
 
 export async function getStaticPaths() {
   const projects = await getCollection('projects');
@@ -13,6 +14,24 @@ export async function getStaticPaths() {
 
 const { project } = Astro.props;
 const { Content } = await render(project);
+
+const relatedArticles = project.data.relatedArticles.length > 0
+  ? (await getAllArticles()).filter(a => project.data.relatedArticles.includes(a.slug))
+  : [];
+
+const statusStyles: Record<typeof project.data.status, string> = {
+  active: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
+  maintained: 'bg-[var(--color-accent)]/10 text-[var(--color-accent)] border-[var(--color-accent)]/30',
+  experimental: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
+  archived: 'bg-slate-500/10 text-slate-400 border-slate-500/30',
+};
+
+const statusLabels: Record<typeof project.data.status, string> = {
+  active: 'Active development',
+  maintained: 'Maintained',
+  experimental: 'Experimental',
+  archived: 'Archived',
+};
 
 const breadcrumbSchema = {
   "@context": "https://schema.org",
@@ -48,9 +67,12 @@ const softwareSchema = {
 
       <!-- Header -->
       <div class="mb-8">
-        <div class="flex items-center gap-3 mb-4">
+        <div class="flex items-center flex-wrap gap-3 mb-4">
           <span class="text-xs font-medium px-2.5 py-1 rounded-full bg-[var(--color-accent)]/10 text-[var(--color-accent)]" style="font-family: var(--font-mono);">
             {project.data.category}
+          </span>
+          <span class:list={["text-xs font-medium px-2.5 py-1 rounded-full border", statusStyles[project.data.status]]} style="font-family: var(--font-mono);">
+            {statusLabels[project.data.status]}
           </span>
           {project.data.metrics && (
             <span class="text-xs font-medium text-[var(--color-cta)]" style="font-family: var(--font-mono);">
@@ -108,6 +130,18 @@ const softwareSchema = {
         />
       </div>
 
+      {project.data.heroImage && (
+        <figure class="mb-10 -mx-4 sm:mx-0">
+          <img
+            src={project.data.heroImage}
+            alt={`${project.data.title} hero image`}
+            loading="eager"
+            decoding="async"
+            class="w-full rounded-lg border border-[var(--color-border)]"
+          />
+        </figure>
+      )}
+
       <!-- Content -->
       <div class="prose prose-invert prose-lg max-w-none
         prose-headings:font-[family-name:var(--font-heading)]
@@ -120,6 +154,33 @@ const softwareSchema = {
       ">
         <Content />
       </div>
+
+      {relatedArticles.length > 0 && (
+        <section class="mt-16 pt-10 border-t border-[var(--color-border)]">
+          <h2 class="text-xl font-semibold mb-6" style="font-family: var(--font-heading);">
+            Wrote about this
+          </h2>
+          <ul class="space-y-4">
+            {relatedArticles.map(article => (
+              <li>
+                <a
+                  href={`/articles/${article.slug}`}
+                  class="group block p-4 rounded-lg border border-[var(--color-border)] hover:border-[var(--color-accent)]/50 transition-colors"
+                >
+                  <div class="flex items-center gap-2 mb-1 text-xs text-[var(--color-text-muted)]" style="font-family: var(--font-mono);">
+                    <span>{article.platform === 'linkedin' ? 'LinkedIn' : 'Medium'}</span>
+                    <span>•</span>
+                    <time>{article.date.toISOString().slice(0, 10)}</time>
+                  </div>
+                  <h3 class="font-semibold text-[var(--color-text)] group-hover:text-[var(--color-accent)] transition-colors">
+                    {article.title}
+                  </h3>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </div>
   </article>
 </Base>
