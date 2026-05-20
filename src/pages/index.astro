@@ -8,7 +8,7 @@ import { getAllArticles } from '../lib/articles';
 const allProjects = await getCollection('projects');
 const featuredProjects = allProjects
   .filter(p => p.data.featured)
-  .sort((a, b) => a.data.sortOrder - b.data.sortOrder);
+  .sort((a, b) => a.data.tier - b.data.tier || a.data.title.localeCompare(b.data.title));
 
 const recentArticles = (await getAllArticles()).slice(0, 3);
 ---
