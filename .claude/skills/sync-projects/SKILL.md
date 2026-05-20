@@ -1,6 +1,6 @@
 ---
 name: sync-projects
-description: Scan github.com/agigante80 for public repos and reconcile with the portfolio. Auto-adds new repos at Tier 3, refreshes existing project pages whose underlying repo has changed since the MDX was last edited, marks newly-archived repos, and surfaces tier-vs-popularity mismatches. One commit per sync. Recoverable via `git revert HEAD`.
+description: Scan github.com/agigante80 for public repos and reconcile with the portfolio. Auto-adds new repos at Tier 3, refreshes existing project pages whose underlying repo has changed since the MDX was last edited, marks newly-archived repos, and surfaces tier-vs-popularity mismatches based on multi-signal engagement (stars, forks, npm, PyPI, Docker Hub pulls). One commit per sync. Recoverable via `git revert HEAD`.
 user_invocable: true
 arguments: (none)
 ---
@@ -36,16 +36,47 @@ IGNORE_REPOS = [
 
 SOFT_REGEN_MARKER = "{/* auto-generated body, edit to take ownership */}"
 
-TIER_MISMATCH = {
-  high_stars_low_tier: 50,   # >= 50 stars but Tier 3 → suggest promote
-  low_stars_high_tier: 5,    # < 5 stars but Tier 1 → suggest demote
+# Multi-signal thresholds, calibrated to Andrea's actual distribution
+# (top project: 16 stars, 4 forks, 1880 npm DL/mo, 18530 Docker pulls)
+ENGAGEMENT_THRESHOLDS = {
+  notable: {
+    stars: 3,
+    forks: 2,
+    npm_dl_per_month: 100,
+    pypi_dl_per_month: 100,
+    docker_pulls_total: 100,
+  },
+  outlier: {
+    stars: 10,
+    forks: 4,
+    npm_dl_per_month: 1000,
+    pypi_dl_per_month: 1000,
+    docker_pulls_total: 5000,
+  },
 }
 
 STATUS_FROM_PUSHED_AT = {
   active_within_days: 30,    # pushed in last 30 days = active
-  maintained_within_days: 365  # older but within a year = maintained (else: keep current or ask)
+  maintained_within_days: 365,  # older but within a year = maintained
 }
+
+STALE_TIER1_MONTHS = 6   # Tier 1 with all-zero engagement AND > 6 months idle = consider demoting
 ```
+
+## Helper: slug normalisation
+
+GitHub repo names mix case and use both `_` and `-`. Portfolio slugs are lowercase with `-`. Use this normalisation everywhere a GH repo is matched to a local MDX:
+
+```
+normalise(name) = name.lower().replace('_', '-')
+```
+
+Examples that must match:
+- `OndaHertz_es` (GH) → `ondahertz-es` matches MDX slug `ondahertz-es`
+- `AgentGate` (GH) → `agentgate` matches MDX slug `agentgate`
+- `SafeHarbor-Media-Stack` (GH) → `safeharbor-media-stack` matches MDX slug `safeharbor-media-stack`
+
+Failing to normalise causes the first sync to flag every existing project as both ORPHAN (no GH match) and NEW (GH repo not in portfolio).
 
 ## Steps
 
@@ -53,26 +84,31 @@ STATUS_FROM_PUSHED_AT = {
 
 ```bash
 gh api users/agigante80/repos --paginate \
-  --jq '.[] | {name, description, fork, archived, pushed_at, stargazers_count, default_branch, homepage, topics, language}'
+  --jq '.[] | {name, description, fork, archived, pushed_at, stargazers_count, forks_count, default_branch, homepage, topics, language}'
 ```
 
-For every candidate that passes the filter in step 2, also verify a README exists:
+For every candidate that survives filtering in step 2, also verify a README exists:
 
 ```bash
 gh api "repos/agigante80/<name>/readme" --jq '.download_url' 2>/dev/null
 ```
 
-If the call fails or returns nothing, the repo has no README; drop it.
-
 ### 2. Apply filters
 
-Drop any repo where any of:
+The fork filter applies **only to NEW candidates**, not to lookups for existing portfolio entries. (Some portfolio projects are forks, e.g. galena-es; orphaning them is wrong.)
 
-- `fork == true`
-- name is in `IGNORE_REPOS`
-- `description` is null or empty
-- README fetch failed
-- `archived == true` AND repo is not already in the portfolio (we never auto-add archived projects; if it's already in the portfolio and just got archived, we handle that as a status update in step 5)
+Build two sets:
+
+**Filtered candidates** (for considering NEW additions):
+- `fork == false`
+- name (normalised) is not in `IGNORE_REPOS`
+- `description` is non-empty
+- README fetch succeeded
+- `archived == false`
+
+**Lookup set** (for "is this GH repo backing an existing MDX?"):
+- ALL non-ignored repos, including forks and archived ones
+- Used in step 4 matching
 
 ### 3. Read local MDX inventory
 
@@ -84,55 +120,75 @@ For each `src/content/projects/*.mdx`:
   ```bash
   git log -1 --format=%aI -- "src/content/projects/<slug>.mdx"
   ```
-- Derive the GH repo name by splitting `githubUrl` on `/` and taking the last segment (lowercase comparison)
+- Derive the GH repo name from `githubUrl` by splitting on `/` and taking the last segment, then apply `normalise()`. This is the key used to match against GH repos.
 
 ### 4. Classify each GitHub repo
 
-Match GH repos to local MDX by case-insensitive repo-name equality.
+Match using `normalise()` on both sides.
 
 | Condition | Bucket |
 |---|---|
-| In portfolio, GH `pushed_at` ≤ MDX git mtime | **SKIP** (already current) |
+| In portfolio (any GH repo, fork or not), GH `pushed_at` ≤ MDX git mtime | **SKIP** (already current) |
 | In portfolio, GH `pushed_at` > MDX git mtime, and GH `archived == true` | **ARCHIVE** (set status to `archived`, no other changes) |
 | In portfolio, GH `pushed_at` > MDX git mtime | **UPDATE** |
-| Not in portfolio, passes filters | **NEW** |
+| Not in portfolio, passes the NEW-candidate filter | **NEW** |
 
-Also produce an **ORPHAN** list: every MDX whose `githubUrl` repo name is not in the GH response (deleted or renamed on GitHub).
+Also produce an **ORPHAN** list: every MDX whose normalised repo name is not in the full GH lookup set (deleted on GitHub, or repo renamed).
 
-### 5. Execute actions
+### 5. Fetch multi-signal engagement (for every classified project + every portfolio project that was skipped)
 
-For each item, do exactly the following.
+The same fetcher feeds tier-suggestion logic in step 7. Run it once per project, store the results.
+
+For each project, gather:
+
+| Signal | How |
+|---|---|
+| `stars` | from GH response (always present) |
+| `forks` | from GH response (always present) |
+| `npm_dl` | try `https://api.npmjs.org/downloads/point/last-month/<slug>`; verify ownership before counting (next bullet) |
+| `pypi_dl` | try `https://pypistats.org/api/packages/<slug>/recent`; verify ownership |
+| `docker_pulls` | try `https://hub.docker.com/v2/repositories/agigante80/<slug>/`; built-in ownership (Andrea's namespace) |
+
+**Ownership verification (critical):** npm and PyPI package names collide. The npm package `agentgate` exists but belongs to "Luis Montes," not Andrea. Verify by fetching the package metadata and checking that the source repository URL matches `https://github.com/agigante80/<name>` (normalised comparison). Examples:
+
+- npm: `npm view <pkg> repository.url` → must contain `agigante80/<name>`
+- PyPI: `curl https://pypi.org/pypi/<pkg>/json | jq '.info.project_urls'` → "Source" or "Homepage" must contain `agigante80/<name>`
+
+If verification fails, do not count the downloads. Record as `null`, not zero.
+
+### 6. Execute actions
+
+For each NEW / UPDATE / ARCHIVE item, do exactly the following.
 
 #### NEW (auto-add a fresh project at Tier 3)
 
-- Slug: lowercase repo name with non-alphanumerics replaced by hyphens
-- Fetch the README content:
+- Slug: `normalise(repo_name)` (lowercase, hyphenated)
+- Fetch README content:
   ```bash
   gh api "repos/agigante80/<name>/readme" --jq '.content' | base64 -d
   ```
-- Derive `description`: rewrite GH's description into one portfolio-voice sentence. Max 160 chars. No em/en dashes. Do not copy the GH description verbatim; it is usually too terse or too marketing-flavoured.
-- Derive `techStack`: GH `language` + any of the GH `topics` that look like tech labels (e.g. "typescript", "docker", "mcp"). Capitalize sensibly.
-- Derive `status`:
-  - `active` if `pushed_at` within last 30 days
-  - `maintained` otherwise
-- Derive `category`: best match from the enum `[AI/MCP, Security, Finance, Utilities, Content]` based on topics and repo description. Default `Utilities` if unclear.
-- Try to find a hero image in the README: parse the first markdown image `![...](...)` whose URL does NOT contain any of `shields.io`, `badge.fury.io`, `/badge/`, `badges.`, or include the word `badge` in the path. If the URL is relative, resolve against `https://raw.githubusercontent.com/agigante80/<name>/<default_branch>/`. Download with `curl -sL` to `public/images/projects/<slug>/hero.<ext>`. Verify > 10 KB. Skip if no valid hero found.
-- Write `src/content/projects/<slug>.mdx` with frontmatter only (no body). Required fields:
+- Derive `description`: rewrite GH description in portfolio voice. Max 160 chars. No em/en dashes.
+- Derive `techStack`: GH `language` + GH `topics` that look like tech labels.
+- Derive `status`: `active` if `pushed_at` within 30 days, else `maintained`.
+- Derive `category`: best match from `[AI/MCP, Security, Finance, Utilities, Content]` based on topics and description. Default `Utilities`.
+- Find a hero image in README: parse the first `![...](...)` whose URL does NOT contain any of `shields.io`, `badge.fury.io`, `/badge/`, `badges.`, or `badge` in the path. Resolve relative URLs against `https://raw.githubusercontent.com/agigante80/<name>/<default_branch>/`. Download to `public/images/projects/<slug>/hero.<ext>` and verify > 10 KB.
+- **Suggest related articles:** load `src/lib/articles.ts`, do case-insensitive substring matching on each article's `title`, `description`, and `tldr` against the project name (and common variants: with/without hyphens, with/without "MCP" suffix, etc.). Collect article slugs whose text mentions the project. If matches found, add them to `relatedArticles`. Skip if no matches; do not invent links.
+- Write `src/content/projects/<slug>.mdx`. Frontmatter only, no body:
   ```yaml
   ---
   title: "<repo name, prettified>"
   description: "<one sentence, ≤160 chars>"
-  category: "<derived category>"
+  category: "<derived>"
   tier: 3
-  status: "<derived status>"
-  techStack: ["..."]
+  status: "<derived>"
+  techStack: [...]
   githubUrl: "https://github.com/agigante80/<name>"
-  liveUrl: "<GH homepage if present>"
+  liveUrl: "<GH homepage if present>"   # omit if absent
   featured: false
   heroImage: "/images/projects/<slug>/hero.<ext>"   # omit if no hero found
+  relatedArticles: [...]   # omit if empty
   ---
   ```
-- No `metrics`, no `relatedArticles`, no body. These are editorial fields for the user to add later via `/add-project` interactive mode or by hand.
 
 #### UPDATE (refresh an existing project)
 
@@ -141,38 +197,48 @@ For each item, do exactly the following.
 - **Refreshed fields**:
   - `description`: regenerate from current README first paragraph + GH description. Max 160 chars. No em/en dashes.
   - `techStack`: regenerate from current GH primary language + topics
-  - `status`: derive from `pushed_at` and `archived` flag
-  - `githubUrl`: refresh in case GH renamed the repo (canonical URL from GH response)
+  - `status`: derive from `pushed_at` and `archived`
+  - `githubUrl`: refresh in case GH renamed the repo
   - `liveUrl`: refresh from current GH homepage
-  - `heroImage`: if the README's hero image URL has changed OR the current heroImage file no longer exists, re-download to `public/images/projects/<slug>/hero.<ext>`. Otherwise leave alone.
+  - `heroImage`: if the README's hero image URL has changed OR the current heroImage file does not exist, re-download. Otherwise leave alone.
 - **Body handling** (soft regen):
-  - If body is empty: leave empty
-  - If body starts with `SOFT_REGEN_MARKER`: regenerate the body using the standard H2 scaffold (What is X / The Problem / How I Built It / optional Architecture / Impact). Pull current README content for hints. **Keep the marker at the top so future syncs continue to refresh.** No em/en dashes anywhere.
-  - Otherwise (body exists and marker absent): leave body untouched. The user has taken ownership.
+  - Body empty: leave empty
+  - Body starts with `SOFT_REGEN_MARKER`: regenerate body using the standard H2 scaffold (What is X / The Problem / How I Built It / optional Architecture / Impact), pulling current README content for hints. Keep the marker at the top.
+  - Marker absent: leave body untouched (user has taken ownership)
 
 #### ARCHIVE (mark an existing project as archived)
 
 - Read existing MDX
 - Update `status:` line to `"archived"`
-- Make no other changes (do not refresh description, body, hero, anything)
+- No other changes
 
 #### ORPHAN
 
 - Take no action
-- Add to the orphan section of the report
+- Add to report with the reason ("no matching GH repo for `<slug>` (was `<githubUrl>`)")
 
-### 6. Tier-vs-popularity check (suggestions only)
+### 7. Tier-vs-popularity suggestions (multi-signal, no action)
 
-For every project in the (post-sync) portfolio, fetch current `stargazers_count`. Flag mismatches:
+For every project in the (post-sync) portfolio, use the engagement signals fetched in step 5 to decide.
 
-- `tier == 3` AND `stars >= 50`: suggest "consider promoting to Tier 1 or 2"
-- `tier == 1` AND `stars < 5`: suggest "consider demoting (low external engagement)"
+A signal is **notable** if its value meets or exceeds the `notable` threshold for its type.
+A signal is **outlier** if its value meets or exceeds the `outlier` threshold for its type.
 
-These are SUGGESTIONS for the user to read. Do not change `tier`.
+Rules:
 
-### 7. Commit and push
+| Condition | Suggestion |
+|---|---|
+| `tier == 3` AND any signal hits **notable** | "consider promoting to Tier 2 or 1: <list the signals and values>" |
+| `tier == 2` AND any signal hits **outlier** | "consider Tier 1: <list the signals>" |
+| `tier == 1` AND all signals are zero (or `null`) AND last push > `STALE_TIER1_MONTHS` ago | "consider demoting Tier 1: no engagement and idle for N months" |
+| `status == "archived"` AND `tier != 3` | "archived projects should not lead the portfolio: consider Tier 3" |
+| `tier == 1` AND last push > 18 months ago | "Tier 1 project is stale (idle N months)" |
 
-If no writes occurred in step 5, skip commit. Otherwise:
+The skill never changes tier. These are text suggestions only.
+
+### 8. Commit and push
+
+If no writes occurred in step 6 (everything was current), skip commit. Otherwise:
 
 ```bash
 git add -A
@@ -182,17 +248,18 @@ git push origin main
 
 Replace `N`, `M`, `K` with actual counts.
 
-### 8. Report
+### 9. Report
 
 Print to the user:
 
 - **Summary line**: `N added | M updated | K newly archived | W orphaned`
 - **Per-bucket detail** (only sections with items):
-  - `Added:` slug, status, hero image included y/n
+  - `Added:` slug, status, hero y/n, related-articles count
   - `Updated:` slug, what changed (description / techStack / status / hero / body-regen)
   - `Archived:` slug
-  - `Orphaned:` slug + reason (no matching GH repo found)
-- **Tier suggestions** (if any): "project X has Y stars at Tier Z; consider tier change"
+  - `Orphaned:` slug + reason
+- **Engagement table** for every portfolio project (post-sync), with columns: slug, tier, stars, forks, npm/mo, pypi/mo, docker pulls. Use `-` for `null` (no published package or ownership not verified) and `0` for verified-but-zero.
+- **Tier suggestions** (if any), each citing which signals fired
 - **Commit hash** (or `(no changes)`)
 
 ## What this skill explicitly does NOT do
@@ -200,8 +267,9 @@ Print to the user:
 - **Promote tier.** Tier is your editorial decision. The skill suggests, never acts.
 - **Touch hand-edited bodies.** Bodies without the soft-regen marker are owned by you.
 - **Delete MDX files** for repos missing from GitHub. Renames look like deletions; the skill flags them as orphans for your review.
-- **Run on a schedule.** Manual invocation only. If you want a cron, that is a separate decision; this skill never wires itself into one.
-- **Generate prose for new auto-added Tier 3 projects.** New projects get frontmatter only. If you later want a case study, either promote tier and write the body manually, or invoke `/add-project` interactively to get the scaffold (with the soft-regen marker).
+- **Run on a schedule.** Manual invocation only.
+- **Generate prose for new auto-added Tier 3 projects.** New projects get frontmatter only.
+- **Count downloads from unverified packages.** A package name on npm or PyPI matching your repo slug is not enough; the source URL must match `agigante80/<name>` too.
 - **Embed shields.io badges, license badges, CI badges, or any badge wall.** Same opinionation as `/add-project`.
 
 ## Recovery
