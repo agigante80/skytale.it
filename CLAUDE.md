@@ -33,6 +33,23 @@ npm run build      # Production build → dist/
 npm run preview    # Preview production build locally
 ```
 
+### Visual verification
+
+For UI changes, take screenshots before reporting work as done:
+
+```bash
+python scripts/capture_localhost.py   # Desktop + mobile homepage, theme toggle before/after
+python scripts/capture_task.py        # Specific pages (/privacy, footer, cookie banner)
+```
+
+Both write to `screenshots/`. Use them rather than asserting "looks good" without proof.
+
+## Workflow
+
+- **Direct commits to `main` are normal.** This is a personal site; no feature branches or PRs are required. Push directly when a change is complete and the build passes.
+- **Always run `npm run build` before pushing.** Cloudflare Workers Builds will rebuild on push, but a local build catches schema, MDX, and type errors first.
+- **No tests, no linter.** The build is the gate. If you touch TypeScript, rely on `tsc`-via-Astro to catch issues at build time.
+
 ## Deployment
 
 GitHub Actions (`.github/workflows/build.yml`) runs `npm run build` on all PRs and pushes to `main` as a build validation check. Actual deployment is handled separately by Cloudflare Workers Builds (not GitHub Actions). Config:
@@ -55,10 +72,10 @@ GitHub Actions (`.github/workflows/build.yml`) runs `npm run build` on all PRs a
 - LinkedIn articles are hardcoded in a `linkedinArticles` array (LinkedIn has no public API)
 - Medium articles are fetched at build time via RSS (`rss-parser`)
 - `getAllArticles()` merges both sources, sorted by date descending
-- To add a LinkedIn article, add an entry to the array in `src/lib/articles.ts`. Required fields: `title`, `description`, `date`, `tags`, `url`, `platform: 'linkedin'`, `slug`, `image` (path under `/public/images/articles/`). Optional: `tldr` (one-paragraph summary shown on detail page).
-- Article `slug` is the last path segment of the LinkedIn URL (e.g. `some-title-andrea-gigante-xxxxx`). Image should be placed at `public/images/articles/<slug>.jpg`.
-- Medium articles are fetched at build time from `https://medium.com/feed/@andrea.gigante` via RSS.
-- Use the `add-article` skill (`/add-article`) to automate fetching metadata and adding the entry.
+- Article `slug` is the last path segment of the LinkedIn URL (e.g. `some-title-andrea-gigante-xxxxx`).
+- **Preferred path:** run `/add-article <linkedin-url>`. The skill fetches metadata, downloads the cover image to `public/images/articles/<slug>.jpg`, writes the TL;DR, and appends the entry to `linkedinArticles`. Manual placement is not needed.
+- **Manual path** (when the skill fails or for non-LinkedIn one-offs): add an entry to the `linkedinArticles` array in `src/lib/articles.ts`. Required fields: `title`, `description`, `date`, `tags`, `url`, `platform: 'linkedin'`, `slug`, `image` (path under `/public/images/articles/`). Optional: `tldr`. You must also save the cover image yourself.
+- Medium articles are fetched at build time from `https://medium.com/feed/@andrea.gigante` via RSS. Nothing to do in the repo.
 
 ### Layout & Theming
 
@@ -91,59 +108,31 @@ GitHub Actions (`.github/workflows/build.yml`) runs `npm run build` on all PRs a
 ### Static Files of Note
 
 - `public/llms.txt`: AI discoverability file
-- `public/_headers`: Cloudflare custom headers (CSP, HSTS, security). **When adding external scripts or fonts, update the CSP here too.** Missing entries silently block resources (e.g. `cdn.jsdelivr.net` had to be added after it was blocked). Current CSP allows `unsafe-inline` for scripts/styles, whitelists Google Tag Manager and `cdn.jsdelivr.net` in `script-src`, and allows `google-analytics.com` / `analytics.google.com` in `connect-src`.
+- `public/_headers`: Cloudflare custom headers (CSP, HSTS, security). Current CSP allows `unsafe-inline` for scripts/styles, whitelists Google Tag Manager and `cdn.jsdelivr.net` in `script-src`, and allows `google-analytics.com` / `analytics.google.com` in `connect-src`. See Gotchas below.
 - `public/robots.txt`: crawl directives
 - `public/og-default.png`: fallback OG image
+
+## Gotchas
+
+- **CSP silently blocks new external resources.** Adding a `<script src="cdn.example.com/...">` or a new font host without updating `public/_headers` will fail in production with no obvious error in the build. This has bitten the project before (`cdn.jsdelivr.net` had to be retroactively allowed in commit `e49df2a`). Always update `_headers` in the same change that introduces a new external origin.
+- **Dark mode is default; theme is toggled via `html.light`.** Two scripts in `Base.astro` cooperate: an inline `<head>` script sets the class before paint to prevent FOUC, and a `data-astro-rerun` script re-binds the toggle after view transitions. If you change theming, both must keep working.
+- **View transitions are on (`ClientRouter`).** Any script that binds to DOM elements at page load needs `data-astro-rerun` or it will only work on first load and silently break on in-app navigation.
 
 ## Design System
 
 - Projects use a 3-tier system: Tier 1 = full case study (MDX body rendered at `/projects/[id]`), Tier 2 = detailed card, Tier 3 = grid card
 - Home page shows `featured: true` projects sorted by `sortOrder`, plus the 3 most recent articles
 
-## About Andrea
+## Author Context
 
-- **Role:** Principal Product Manager at Oracle NetSuite
-- **Location:** Málaga, Spain (Italian origin)
-- **Education:** The Open University
-- **Background:** 13+ years experience. Scrum & Kanban expert, roadmap redesign, waterfall-to-agile transitions. Industries: sports betting, insurance, automotive, finance.
-- **Self-description:** A "bridge" connecting business acumen and technical knowledge
-- **Languages:** English, Italian, Spanish
-- **Interests:** Security enthusiast, coffee addict, sci-fi fan, chess, Shorinji Kempo, Linux user
-- **GitHub:** github.com/agigante80
-- **LinkedIn:** linkedin.com/in/agigante/
-
-## Site Purpose
-
-Showcase practical skills and knowledge to potential future employers. The site should demonstrate that Andrea is more than a PM title. He builds real tools, understands infrastructure, and ships code.
-
-## GitHub Projects (for portfolio section)
-
-### Public (can link directly)
-- **actual-mcp-server**: MCP server for Actual Budget, 62 tools, TypeScript, Docker
-- **AgentGate**: Remote AI CLI control via Telegram/Slack, multi-agent orchestration, Python
-- **Actual-sync**: Automated bank sync for Actual Budget, Node.js, Docker, 309 tests
-- **VPNSentinel**: Distributed VPN monitoring, DNS leak detection, Python, Flask
-- **SafeHarbor-Media-Stack**: Self-hosted media stack on Synology NAS, Docker Compose
-- **vibe-coding-prompts**: Curated AI meta-prompts for dev workflows
-- **ContentGen-AI**: AI blog content pipeline, OpenAI API, Python
-- **galena_es**: AI-generated minerals blog (galena.es), Jekyll + ContentGen-AI
-- **OndaHertz_es**: AI-generated ham radio blog (ondahertz.es), Jekyll + ContentGen-AI
-- **pic2vid**: Image-to-video converter, Bash/FFmpeg
-- **qr-with-icon**: QR code generator with custom icons, Python
-- **backup_skytale_it**: Backup of current site
-- **agigante-creative-theme-jekyll**: Current site's Jekyll theme
-
+Biographical info, the site's marketing purpose, and the source-of-truth list of Andrea's external GitHub projects live in `reference/about-andrea.md`. Read it before writing portfolio copy, an "about" section, or any content that speaks in Andrea's voice. For code work, the authoritative project list is `src/content/projects/*.mdx`.
 
 ## Tools Available
 
-- **Figma MCP**: Not yet configured. To install:
-  ```bash
-  claude mcp add figma -- npx -y figma-developer-mcp --figma-api-key=<FIGMA_API_KEY>
-  ```
 - **SEO Inspector MCP**: Configured in `.mcp.json`. Page-level SEO analysis.
 - **claude-seo skill**: Installed globally. Run `/seo audit https://skytale.it` for full audits.
+- **add-article skill**: `/add-article <linkedin-url>` fetches metadata, downloads the cover image, and appends to `src/lib/articles.ts`.
 - **Lovart AI** (lovart.ai): External branding tool. Andrea generates images externally; provide prompts when needed.
-- **add-article skill**: `/add-article` fetches LinkedIn article metadata, downloads cover image, and adds entry to `articles.ts`.
 
 ## Content Guardrails
 
@@ -153,7 +142,6 @@ Showcase practical skills and knowledge to potential future employers. The site 
 
 ## Reference Material
 
+- `reference/about-andrea.md`: Biographical context, site purpose, external GitHub project list (for content writing, not code)
 - `reference/current-site.md`: Content/design inventory from the existing site, needed images list
 - `assets/reference/`: Original profile photos, brand logo, portfolio thumbnails, banner images
-- `scripts/capture_task.py`: Playwright screenshot utility (captures specific pages: `/privacy`, footer area, cookie banner)
-- `scripts/capture_localhost.py`: Captures desktop + mobile screenshots of homepage, including theme toggle before/after; saves to `screenshots/`
