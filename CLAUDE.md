@@ -69,7 +69,7 @@ GitHub Actions (`.github/workflows/build.yml`) runs `npm run build` on all PRs a
 **Projects** use Astro content collections (`src/content/projects/*.mdx`). Schema defined in `src/content.config.ts` with Zod validation. Each project has:
 
 - **Required:** `title`, `description`, `category` (enum), `tier` (1-3), `status` (enum: `active`, `maintained`, `archived`, `experimental`), `techStack`
-- **Optional:** `githubUrl`, `liveUrl`, `featured` (bool), `metrics`, `heroImage` (path under `/public/images/projects/<slug>/`), `relatedArticles` (array of article slugs from `src/lib/articles.ts`)
+- **Optional:** `githubUrl`, `liveUrl`, `featured` (bool), `metrics`, `heroImage` (path under `/public/images/projects/<slug>/`), `relatedArticles` (array of article slugs from `src/lib/articles.ts`), `lastSyncedFrom` (ISO 8601 timestamp; written by `/sync-projects`, never edited by hand; absent means "never synced")
 
 Every project gets a `/projects/[id]` page via `src/pages/projects/[id].astro`. The page is two-column on `lg:` (main + sticky sidebar with status/tech/actions/share) and stacks on mobile. The MDX body, when present, renders as the case-study content. Hero image renders above the body and is automatically used as `og:image` for social shares; without one, the default OG image is used. A "Wrote about this" section at the bottom auto-resolves `relatedArticles` slugs against `getAllArticles()` and links back to the article detail pages. The `SoftwareSourceCode` schema is auto-enriched with `dateModified` (from the MDX file's git mtime) and `keywords` (from `techStack`); skills do not need to write these.
 
@@ -143,7 +143,7 @@ Biographical info, the site's marketing purpose, and the source-of-truth list of
 - **claude-seo skill**: Installed globally. Run `/seo audit https://skytale.it` for full audits.
 - **add-article skill**: `/add-article <linkedin-url>` fetches metadata, downloads the cover image, and appends to `src/lib/articles.ts`.
 - **add-project skill**: `/add-project <github-url>` scaffolds a project MDX with the standard case-study structure, optionally downloads a hero image, suggests related articles. Bodies it scaffolds carry a soft-regen marker (`{/* auto-generated body, edit to take ownership */}`); remove the marker once you edit the body to claim ownership.
-- **sync-projects skill**: `/sync-projects` reconciles the portfolio against `github.com/agigante80`. Auto-adds new public repos at Tier 3, refreshes existing projects whose GH `pushed_at` is newer than the MDX git mtime, marks newly-archived projects, surfaces tier-vs-popularity mismatches. One commit per sync; revert with `git revert HEAD` if undesired. Hand-edited bodies (no marker) are never touched.
+- **sync-projects skill**: `/sync-projects` reconciles the portfolio against `github.com/agigante80`. Auto-adds new public repos at Tier 3, refreshes existing projects whose GH `pushed_at` is newer than the MDX `lastSyncedFrom`, marks newly-archived projects, surfaces tier-vs-popularity mismatches. One commit per sync; revert with `git revert HEAD` if undesired. Hand-edited bodies (no marker) are never touched. Projects without `lastSyncedFrom` are treated as never-synced and get refreshed on next run.
 - **Lovart AI** (lovart.ai): External branding tool. Andrea generates images externally; provide prompts when needed.
 
 ## Content Guardrails

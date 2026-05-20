@@ -115,22 +115,20 @@ Build two sets:
 For each `src/content/projects/*.mdx`:
 
 - Parse YAML frontmatter
-- Extract: `githubUrl`, current `tier`, current `status`, current body (everything after the closing `---`)
-- Get last-modified timestamp:
-  ```bash
-  git log -1 --format=%aI -- "src/content/projects/<slug>.mdx"
-  ```
+- Extract: `githubUrl`, current `tier`, current `status`, `lastSyncedFrom` (ISO 8601 timestamp or absent), current body (everything after the closing `---`)
 - Derive the GH repo name from `githubUrl` by splitting on `/` and taking the last segment, then apply `normalise()`. This is the key used to match against GH repos.
+
+`lastSyncedFrom` is the operational signal for "have we already pulled this state from GitHub?". It is written by this skill on every NEW / UPDATE / ARCHIVE action and never edited by humans. **Absent** means "never synced" and triggers a full UPDATE on the next run. Comparing against file git mtime (the old approach) was unreliable: any schema migration that touched every MDX would reset the signal for every project.
 
 ### 4. Classify each GitHub repo
 
-Match using `normalise()` on both sides.
+Match using `normalise()` on both sides. Comparison uses MDX `lastSyncedFrom` (not file mtime).
 
 | Condition | Bucket |
 |---|---|
-| In portfolio (any GH repo, fork or not), GH `pushed_at` ≤ MDX git mtime | **SKIP** (already current) |
-| In portfolio, GH `pushed_at` > MDX git mtime, and GH `archived == true` | **ARCHIVE** (set status to `archived`, no other changes) |
-| In portfolio, GH `pushed_at` > MDX git mtime | **UPDATE** |
+| In portfolio, `lastSyncedFrom` present, GH `pushed_at` ≤ `lastSyncedFrom` | **SKIP** (already current) |
+| In portfolio, `lastSyncedFrom` absent OR GH `pushed_at` > `lastSyncedFrom`, and GH `archived == true` | **ARCHIVE** (set status to `archived`, no other content changes) |
+| In portfolio, `lastSyncedFrom` absent OR GH `pushed_at` > `lastSyncedFrom` | **UPDATE** |
 | Not in portfolio, passes the NEW-candidate filter | **NEW** |
 
 Also produce an **ORPHAN** list: every MDX whose normalised repo name is not in the full GH lookup set (deleted on GitHub, or repo renamed).
@@ -187,6 +185,7 @@ For each NEW / UPDATE / ARCHIVE item, do exactly the following.
   featured: false
   heroImage: "/images/projects/<slug>/hero.<ext>"   # omit if no hero found
   relatedArticles: [...]   # omit if empty
+  lastSyncedFrom: "<now, ISO 8601 with Z suffix>"
   ---
   ```
 
@@ -201,6 +200,7 @@ For each NEW / UPDATE / ARCHIVE item, do exactly the following.
   - `githubUrl`: refresh in case GH renamed the repo
   - `liveUrl`: refresh from current GH homepage
   - `heroImage`: if the README's hero image URL has changed OR the current heroImage file does not exist, re-download. Otherwise leave alone.
+  - `lastSyncedFrom`: set to the current ISO 8601 timestamp (with Z suffix). This is what stops the next run from re-classifying as UPDATE.
 - **Body handling** (soft regen):
   - Body empty: leave empty
   - Body starts with `SOFT_REGEN_MARKER`: regenerate body using the standard H2 scaffold (What is X / The Problem / How I Built It / optional Architecture / Impact), pulling current README content for hints. Keep the marker at the top.
@@ -210,6 +210,7 @@ For each NEW / UPDATE / ARCHIVE item, do exactly the following.
 
 - Read existing MDX
 - Update `status:` line to `"archived"`
+- Update `lastSyncedFrom` to the current ISO 8601 timestamp
 - No other changes
 
 #### ORPHAN

@@ -16,6 +16,7 @@ const projects = defineCollection({
     metrics: z.string().optional(),
     heroImage: z.string().optional(),
     relatedArticles: z.array(z.string()).default([]),
+    lastSyncedFrom: z.string().datetime().optional(),
   }),
 });
 
