@@ -71,7 +71,7 @@ GitHub Actions (`.github/workflows/build.yml`) runs `npm run build` on all PRs a
 - **Required:** `title`, `description`, `category` (enum), `tier` (1-3), `status` (enum: `active`, `maintained`, `archived`, `experimental`), `techStack`
 - **Optional:** `githubUrl`, `liveUrl`, `featured` (bool), `metrics`, `heroImage` (path under `/public/images/projects/<slug>/`), `relatedArticles` (array of article slugs from `src/lib/articles.ts`)
 
-Every project gets a `/projects/[id]` page via `src/pages/projects/[id].astro`. The MDX body, when present, renders as the case-study content. Hero image renders above the body. A "Wrote about this" section at the bottom auto-resolves `relatedArticles` slugs against `getAllArticles()` and links back to the article detail pages.
+Every project gets a `/projects/[id]` page via `src/pages/projects/[id].astro`. The page is two-column on `lg:` (main + sticky sidebar with status/tech/actions/share) and stacks on mobile. The MDX body, when present, renders as the case-study content. Hero image renders above the body and is automatically used as `og:image` for social shares; without one, the default OG image is used. A "Wrote about this" section at the bottom auto-resolves `relatedArticles` slugs against `getAllArticles()` and links back to the article detail pages. The `SoftwareSourceCode` schema is auto-enriched with `dateModified` (from the MDX file's git mtime) and `keywords` (from `techStack`); skills do not need to write these.
 
 To add a project, run `/add-project <github-url>`. The skill fetches repo metadata, optionally pulls a hero image, suggests related articles, and scaffolds the MDX with the standard H2 sections (What / Problem / How I Built It / Architecture / Impact for Tier 1; no body for Tier 2/3).
 

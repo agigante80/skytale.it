@@ -127,12 +127,20 @@ If the user said "no", skip this step. The MDX ends after the closing `---` of t
 
 Verify all of the following and report results to the user:
 
+**Content**
 - [ ] No em or en dashes anywhere in the file (including ` - ` as a clause separator)
 - [ ] `description` is one sentence, present tense, names the tool and what it does
 - [ ] `slug` matches the filename (no trailing extension in slug references)
-- [ ] If `heroImage` is set, the file exists at the referenced path and is > 10KB
 - [ ] If `relatedArticles` is set, every slug exists in `src/lib/articles.ts`
 - [ ] If the user opted into a body, it follows the standard H2 structure (What / Problem / How / optional Architecture / Impact); if not, the MDX has no body and that is intentional
+
+**SEO**
+- [ ] `description` is ≤ 160 chars (this becomes both `<meta name="description">` and `og:description`)
+- [ ] `title` is ≤ 43 chars (warn but do not block; renders as `{title} | Andrea Gigante`, target ≤ 60 chars total in SERPs)
+- [ ] If `heroImage` is set: file exists, is > 10 KB, and aspect ratio is between 1.5:1 and 2.5:1 (warn if outside; 1.91:1 = 1200×630 is the LinkedIn/Twitter sweet spot)
+- [ ] The page renderer (`src/pages/projects/[id].astro`) will automatically use `heroImage` as `og:image`, derive `dateModified` from git, and add `keywords` from `techStack` to the schema. Do not duplicate any of this in the MDX frontmatter.
+
+**Build**
 - [ ] `npm run build` succeeds (this is the schema validator; do not skip it)
 
 If `npm run build` fails on a Zod validation error, fix the frontmatter and rebuild before committing.
