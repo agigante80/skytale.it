@@ -15,6 +15,17 @@ export interface Article {
 // LinkedIn articles - add manually here (LinkedIn has no public article API)
 const linkedinArticles: Article[] = [
   {
+    title: "A Smart Ceiling Fan, a Wall Switch, and Two Evenings with Claude",
+    description: "Two evenings researching with Claude saved a smart ceiling fan purchase, then debugged a hidden install bug. The case for AI research before hardware buys.",
+    date: new Date('2026-05-20'),
+    tags: ["Home Automation", "Home Assistant", "AI-Assisted Development", "Smart Home"],
+    url: "https://www.linkedin.com/pulse/smart-ceiling-fan-wall-switch-two-evenings-claude-andrea-gigante-lfcwe",
+    platform: 'linkedin',
+    image: "/images/articles/smart-ceiling-fan-wall-switch-two-evenings-claude-andrea-gigante-lfcwe.jpg",
+    slug: "smart-ceiling-fan-wall-switch-two-evenings-claude-andrea-gigante-lfcwe",
+    tldr: "Smart hardware buying goes wrong because the spec sheet hides the failure modes. Two evenings of research with Claude before purchasing an Ovlaim ceiling fan caught most issues, but one stayed hidden: flipping the existing wall switch killed the canopy's WiFi every time. A second session led to a bypass-wiring solution where the canopy stays permanently live, the wall switch becomes a state sensor for a Home Assistant relay, and the result is published as a parameterised automation on GitHub. AI is at its best as a parallel reader of forums and manuals, not as the one making the call.",
+  },
+  {
     title: "I Let AI Write 100% of Two Blogs. Here's What I Learned",
     description: "I handed two blogs entirely to AI: every article, image, and SEO tag. Here's what months of automated publishing revealed about AI's real limits.",
     date: new Date('2026-04-21'),
