@@ -66,7 +66,14 @@ GitHub Actions (`.github/workflows/build.yml`) runs `npm run build` on all PRs a
 
 ### Content: Two Different Systems
 
-**Projects** use Astro content collections (`src/content/projects/*.mdx`). Schema defined in `src/content.config.ts` with Zod validation. Each project has: title, description, category (enum: AI/MCP, Security, Finance, Utilities, Content), tier (1-3), techStack, optional githubUrl/liveUrl, featured flag, metrics. Every project gets a `/projects/[id]` page via `src/pages/projects/[id].astro`; the MDX body (if present) renders as the case-study content.
+**Projects** use Astro content collections (`src/content/projects/*.mdx`). Schema defined in `src/content.config.ts` with Zod validation. Each project has:
+
+- **Required:** `title`, `description`, `category` (enum), `tier` (1-3), `status` (enum: `active`, `maintained`, `archived`, `experimental`), `techStack`
+- **Optional:** `githubUrl`, `liveUrl`, `featured` (bool), `metrics`, `heroImage` (path under `/public/images/projects/<slug>/`), `relatedArticles` (array of article slugs from `src/lib/articles.ts`)
+
+Every project gets a `/projects/[id]` page via `src/pages/projects/[id].astro`. The MDX body, when present, renders as the case-study content. Hero image renders above the body. A "Wrote about this" section at the bottom auto-resolves `relatedArticles` slugs against `getAllArticles()` and links back to the article detail pages.
+
+To add a project, run `/add-project <github-url>`. The skill fetches repo metadata, optionally pulls a hero image, suggests related articles, and scaffolds the MDX with the standard H2 sections (What / Problem / How I Built It / Architecture / Impact for Tier 1; no body for Tier 2/3).
 
 **Articles** do NOT use content collections. They're managed in `src/lib/articles.ts` as a hybrid system:
 - LinkedIn articles are hardcoded in a `linkedinArticles` array (LinkedIn has no public API)
@@ -135,6 +142,7 @@ Biographical info, the site's marketing purpose, and the source-of-truth list of
 - **SEO Inspector MCP**: Configured in `.mcp.json`. Page-level SEO analysis.
 - **claude-seo skill**: Installed globally. Run `/seo audit https://skytale.it` for full audits.
 - **add-article skill**: `/add-article <linkedin-url>` fetches metadata, downloads the cover image, and appends to `src/lib/articles.ts`.
+- **add-project skill**: `/add-project <github-url>` scaffolds a project MDX with the standard case-study structure, optionally downloads a hero image, suggests related articles.
 - **Lovart AI** (lovart.ai): External branding tool. Andrea generates images externally; provide prompts when needed.
 
 ## Content Guardrails
