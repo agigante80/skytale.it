@@ -322,6 +322,14 @@ const bandId = `scytale-${Math.random().toString(36).slice(2, 8)}`;
     const cycleMs = parseInt(band.dataset.cycleMs || '5500', 10);
     const seed = band.dataset.seed || '';
 
+    // Astro scopes <style> by attaching a data-astro-cid-* attribute to every
+    // matched element. SSR cols carry it, JS-injected cols do not, so scoped
+    // selectors miss them and the new cipher loses color, animation, and the
+    // fading transition. Read the attribute from the band and apply it to
+    // every element we generate via innerHTML.
+    const scopeName = (Array.from(band.attributes).find(a => a.name.startsWith('data-astro-cid-')) || {}).name || '';
+    const scopeAttr = scopeName ? ' ' + scopeName + '=""' : '';
+
     if (cycle.length <= 1) return;
 
     // Honor reduced-motion: skip cycling entirely.
@@ -349,14 +357,14 @@ const bandId = `scytale-${Math.random().toString(36).slice(2, 8)}`;
         const isSpace = mc === ' ';
         const cipherCh = isSpace ? '/' : mc;
         const decodedCh = isSpace ? '\u00A0' : mc;
-        html += '<div class="col key' + (isSpace ? ' space' : '') + '" style="--mi: ' + mi + ';">'
-              + '<span class="cipher">' + cipherCh + '</span>'
-              + '<span class="link" aria-hidden="true">|</span>'
-              + '<span class="decoded">' + decodedCh + '</span>'
+        html += '<div class="col key' + (isSpace ? ' space' : '') + '" style="--mi: ' + mi + ';"' + scopeAttr + '>'
+              + '<span class="cipher"' + scopeAttr + '>' + cipherCh + '</span>'
+              + '<span class="link" aria-hidden="true"' + scopeAttr + '>|</span>'
+              + '<span class="decoded"' + scopeAttr + '>' + decodedCh + '</span>'
               + '</div>';
         if (mi < chars.length - 1) {
           for (let j = 0; j < spacing - 1; j++) {
-            html += '<div class="col"><span class="cipher">' + next() + '</span></div>';
+            html += '<div class="col"' + scopeAttr + '><span class="cipher"' + scopeAttr + '>' + next() + '</span></div>';
           }
         }
       });
