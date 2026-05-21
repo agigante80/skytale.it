@@ -12,24 +12,31 @@ const featuredProjects = allProjects
   .sort((a, b) => a.data.tier - b.data.tier || a.data.title.localeCompare(b.data.title));
 
 const recentArticles = (await getAllArticles()).slice(0, 3);
+
+// Cycling messages for the homepage scytale band. Edit freely.
+const scytaleCycle = [
+  "WRAP TO DECODE",
+  "ASK FOR THE KEY",
+  "HELLO FROM MALAGA",
+  "BUILT NOT POSTED",
+  "OPEN BY DEFAULT",
+];
 ---
 
 <Base
   title="Andrea Gigante | Principal Product Manager at Oracle NetSuite"
-  description="Andrea Gigante - Principal Product Manager at Oracle NetSuite. 13+ years building products across AI, security, and finance. Open-source tools, technical articles, and portfolio."
+  description="Andrea Gigante: Principal Product Manager at Oracle NetSuite. 13+ years building products across AI, security, and finance. Open-source tools, technical articles, and portfolio."
 >
   <!-- Hero -->
   <section class="relative py-20 sm:py-28">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="hero-grid">
         <div class="min-w-0">
-          <!-- Eyebrow: role/company/location, mono, accent dash -->
           <div class="hero-eyebrow">
             <span class="dash"></span>
             <span>Principal Product Manager · Oracle NetSuite · Málaga</span>
           </div>
 
-          <!-- Headline: name + tagline, mono display, offer leads via tagline -->
           <h1 class="hero-title">
             <span class="name">Andrea Gigante.</span>
             <span class="tagline">
@@ -57,7 +64,6 @@ const recentArticles = (await getAllArticles()).slice(0, 3);
           </div>
         </div>
 
-        <!-- Frameless caricature with soft accent glow -->
         <div class="portrait">
           <img
             src="/images/profile.png"
@@ -71,8 +77,8 @@ const recentArticles = (await getAllArticles()).slice(0, 3);
     </div>
   </section>
 
-  <!-- Scytale strip: brand motif divider -->
-  <ScytaleBand />
+  <!-- Scytale motif divider: cycles through several decoded phrases -->
+  <ScytaleBand messages={scytaleCycle} spacing={5} cycleMs={5500} />
 
   <!-- Featured Projects -->
   <section class="py-16 border-t border-[var(--color-border)]">
@@ -144,7 +150,6 @@ const recentArticles = (await getAllArticles()).slice(0, 3);
 </Base>
 
 <style>
-  /* Hero grid: text + portrait, collapses below 1020px */
   .hero-grid {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 280px;
@@ -256,7 +261,6 @@ const recentArticles = (await getAllArticles()).slice(0, 3);
     color: var(--color-accent);
   }
 
-  /* Frameless caricature with soft accent glow */
   .portrait {
     position: relative;
     width: 280px;
@@ -285,7 +289,6 @@ const recentArticles = (await getAllArticles()).slice(0, 3);
     .portrait { width: 200px; height: 200px; margin: 24px auto 0; }
   }
 
-  /* Section eyebrow */
   .section-eyebrow {
     font-family: var(--font-mono);
     font-size: 11px;
