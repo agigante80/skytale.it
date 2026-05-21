@@ -134,14 +134,13 @@ const interests = ["Security Enthusiast", "Coffee Addict", "Sci-Fi Fan", "Chess"
   <!-- Scytale motif divider: the page where the cipher story lives -->
   <ScytaleBand
     variant="compact"
-    rows={[
-      'σ·κ·υ·τ·ά·λ·η··A·N·C·I·E·N·T··S·P·A·R·T·A··T·R·A·N·S·P·O·S·I·T·I·O·N··C·I·P·H·E·R',
-      'W·R·A·P··T·H·E··P·A·R·C·H·M·E·N·T··A·R·O·U·N·D··A··C·Y·L·I·N·D·E·R··T·O··D·E·C·O·D·E',
-    ]}
+    message="WRAP THE STRIP"
+    spacing={5}
+    seed="about-page"
   />
 
   <!-- The Skytale Story -->
-  <section class="py-16 border-t border-[var(--color-border)]">
+  <section id="origin" class="py-16 border-t border-[var(--color-border)] scroll-mt-24">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
         <!-- Text -->
@@ -157,6 +156,9 @@ const interests = ["Security Enthusiast", "Coffee Addict", "Sci-Fi Fan", "Chess"
           <div class="space-y-4 text-[var(--color-text-muted)]">
             <p>
               The name comes from the <strong class="text-[var(--color-text)]">scytale</strong> (σκυτάλη), an ancient Greek transposition cipher used by Spartans during military campaigns. A parchment strip wrapped around a cylinder of specific diameter; only someone with an identical cylinder could decode the message.
+            </p>
+            <p>
+              The cipher works by spacing: characters at regular intervals along the strip form the hidden message, the rest are filler. Without the right "key" (the cylinder's diameter), the strip looks like noise. With it, the message reveals itself. Try reading every 5th character above.
             </p>
             <p>
               As a kid, I used to practice steganography with friends, hiding messages in plain sight. That early fascination with encryption and security never left me.
