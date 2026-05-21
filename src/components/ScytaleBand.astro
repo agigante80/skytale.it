@@ -2,48 +2,57 @@
 /**
  * ScytaleBand: brand motif divider that demonstrates the cipher.
  *
- * Renders an encoded strip + its decoded twin below, vertically aligned column-by-column
- * so the viewer literally SEES the relationship ("every Nth char down = the message").
- * A subtle wave animation pulses through the key cells left-to-right every ~14s,
- * showing the read order. A "what?" pill links to the about page for the full story.
+ * Renders an encoded strip plus its decoded twin below, vertically aligned
+ * column by column so the viewer sees the relationship literally: every Nth
+ * char down equals the message.
+ *
+ * Pass a single `message` for a static band, or `messages: string[]` to cycle
+ * through several decoded phrases on a timer. Each swap redraws the cipher
+ * and replays the read-wave animation. A small pager row of pips appears
+ * below the strip when there is more than one message; click any pip to jump.
  */
 interface Props {
-  message?: string;     // plaintext the cipher decodes to
-  spacing?: number;     // "key" / cylinder diameter; every Nth column is part of the message
+  message?: string;
+  messages?: string[];
+  spacing?: number;
+  cycleMs?: number;
   variant?: 'default' | 'compact';
   animate?: boolean;
-  seed?: string;        // override for the random filler seed (defaults to message)
+  seed?: string;
 }
 const {
-  message = "SHIPS REAL TOOLS",
+  message = "WRAP TO DECODE",
+  messages,
   spacing = 5,
+  cycleMs = 5500,
   variant = 'default',
   animate = true,
   seed,
 } = Astro.props;
 
-// Deterministic filler chars so the cipher is stable across builds
+// Cycle list: either the explicit messages array, or a single-element list.
+const cycle = messages && messages.length > 0 ? messages : [message];
+
+// Deterministic filler chars so SSR and hydration agree on initial markup.
 const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 function seedFromString(s: string) {
   let h = 2166136261;
   for (let i = 0; i < s.length; i++) h = (h ^ s.charCodeAt(i)) * 16777619 >>> 0;
   return h;
 }
-let rng = seedFromString(seed ?? message);
+let rng = seedFromString(seed ?? cycle[0]);
 function nextFiller() {
   rng = (rng * 1103515245 + 12345) >>> 0;
   return alphabet[rng % 26];
 }
 
-// Build the column layout: each message char is a "key" column (cipher char on top,
-// decoded char below); between message chars sit (spacing-1) "filler" columns
-// with only a cipher char (dim).
-const messageChars = message.split('');
+// Build columns for the initial (first) message. JS handles cycling.
+const initialMessage = cycle[0];
+const messageChars = initialMessage.split('');
 type Col = { cipher: string; decoded?: string; key: boolean; isSpace?: boolean; mi?: number };
 const cols: Col[] = [];
 messageChars.forEach((mc, mi) => {
   if (mc === ' ') {
-    // visualise message spaces with a slash so the grid stays solid
     cols.push({ cipher: '/', decoded: ' ', key: true, isSpace: true, mi });
   } else {
     cols.push({ cipher: mc, decoded: mc, key: true, mi });
@@ -56,15 +65,22 @@ messageChars.forEach((mc, mi) => {
 });
 
 const ord = (n: number) => n === 1 ? '1st' : n === 2 ? '2nd' : n === 3 ? '3rd' : `${n}th`;
-const ariaLabel = `Scytale cipher: ${cols.map(c => c.cipher).join('')} decodes to "${message}" by reading every ${ord(spacing)} character.`;
+const ariaLabel = `Scytale cipher decoding to: "${initialMessage}" by reading every ${ord(spacing)} character.`;
+
+// Unique id so multiple bands on a page do not collide.
+const bandId = `scytale-${Math.random().toString(36).slice(2, 8)}`;
 ---
 
 <aside
   class:list={['scytale-band', variant, animate && 'animated']}
+  id={bandId}
   role="img"
   aria-label={ariaLabel}
+  data-cycle={JSON.stringify(cycle)}
+  data-spacing={spacing}
+  data-cycle-ms={cycleMs}
+  data-seed={seed ?? ''}
 >
-  <!-- Strip: columns of (cipher / link / decoded), vertically aligned -->
   <div class="scytale-strip-wrap">
     <div class="scytale-strip">
       {cols.map(col => (
@@ -84,7 +100,19 @@ const ariaLabel = `Scytale cipher: ${cols.map(c => c.cipher).join('')} decodes t
     </div>
   </div>
 
-  <!-- Caption: self-explanatory legend + "what?" pill -->
+  {cycle.length > 1 && (
+    <div class="scytale-pager" role="tablist" aria-label="Cipher messages">
+      {cycle.map((msg, i) => (
+        <button
+          type="button"
+          class:list={['pip', i === 0 && 'active']}
+          data-idx={i}
+          aria-label={`Show message ${i + 1} of ${cycle.length}: ${msg}`}
+        ></button>
+      ))}
+    </div>
+  )}
+
   <div class="scytale-caption">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3">
       <span class="lab">
@@ -116,9 +144,9 @@ const ariaLabel = `Scytale cipher: ${cols.map(c => c.cipher).join('')} decodes t
   .scytale-band.compact { padding: 16px 0 10px; }
 
   /*
-    Strip fits the container exactly; never overflows. Each column is a flex unit
-    that shares the available width equally. Chars scale via clamp() so the full
-    message is always visible end-to-end, no matter the viewport.
+    Strip fits the container exactly. Each column is a flex unit that shares
+    the available width equally, so the full message is always visible end to
+    end regardless of viewport width.
   */
   .scytale-strip-wrap {
     max-width: 1280px;
@@ -134,8 +162,7 @@ const ariaLabel = `Scytale cipher: ${cols.map(c => c.cipher).join('')} decodes t
     user-select: none;
   }
 
-  /* Each column stacks cipher char + link + decoded char vertically.
-     flex: 1 1 0 shares container width equally; max-width caps very wide viewports. */
+  /* Each column stacks cipher char, link glyph, decoded char vertically. */
   .col {
     display: flex;
     flex-direction: column;
@@ -143,6 +170,7 @@ const ariaLabel = `Scytale cipher: ${cols.map(c => c.cipher).join('')} decodes t
     flex: 1 1 0;
     min-width: 0;
     max-width: 20px;
+    transition: opacity .35s ease-out;
   }
   .col .cipher {
     font-size: clamp(10px, 1.05vw, 13px);
@@ -169,6 +197,34 @@ const ariaLabel = `Scytale cipher: ${cols.map(c => c.cipher).join('')} decodes t
     line-height: 1.2;
     color: var(--color-accent);
     font-weight: 600;
+  }
+
+  /* Fading state: both rows fade out together while JS swaps the cipher. */
+  .scytale-band.fading .col { opacity: 0; }
+
+  /* Pager: small pips below the strip when cycling through multiple messages */
+  .scytale-pager {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .scytale-pager .pip {
+    width: 14px;
+    height: 4px;
+    border-radius: 2px;
+    border: none;
+    background: var(--color-border);
+    padding: 0;
+    cursor: pointer;
+    transition: background .25s, width .25s;
+  }
+  .scytale-pager .pip:hover {
+    background: color-mix(in oklab, var(--color-accent) 50%, var(--color-border));
+  }
+  .scytale-pager .pip.active {
+    background: var(--color-accent);
+    width: 22px;
   }
 
   /* Caption */
@@ -209,46 +265,148 @@ const ariaLabel = `Scytale cipher: ${cols.map(c => c.cipher).join('')} decodes t
   }
 
   /*
-    Animation: a wave pulses left-to-right through the key columns every 14s.
-    Each column's cipher char glows briefly, the link "|" brightens, then the
-    decoded char bounces, telling the read story one column at a time.
-    animation-delay staggers each column by its message index.
+    Read wave: a pulse animates left to right through the key columns. Cipher
+    char glows, link brightens, decoded char bounces. Tells the read order
+    one column at a time. Re-triggered on each message swap.
   */
   @media (prefers-reduced-motion: no-preference) {
     .scytale-band.animated .col.key .cipher {
-      animation: scy-pulse 14s ease-out infinite;
-      animation-delay: calc(var(--mi, 0) * 0.12s);
+      animation: scy-pulse 5s ease-out infinite;
+      animation-delay: calc(var(--mi, 0) * 0.10s);
     }
     .scytale-band.animated .col.key .link {
-      animation: scy-link 14s ease-out infinite;
-      animation-delay: calc(var(--mi, 0) * 0.12s + 0.08s);
+      animation: scy-link 5s ease-out infinite;
+      animation-delay: calc(var(--mi, 0) * 0.10s + 0.08s);
     }
     .scytale-band.animated .col.key .decoded {
-      animation: scy-bounce 14s ease-out infinite;
-      animation-delay: calc(var(--mi, 0) * 0.12s + 0.18s);
+      animation: scy-bounce 5s ease-out infinite;
+      animation-delay: calc(var(--mi, 0) * 0.10s + 0.18s);
     }
   }
   @keyframes scy-pulse {
     0%   { text-shadow: 0 0 0 transparent; transform: translateY(0); }
-    3%   { text-shadow: 0 0 18px color-mix(in oklab, var(--color-accent) 90%, transparent); transform: translateY(-1px); }
-    8%   { text-shadow: 0 0 0 transparent; transform: translateY(0); }
+    8%   { text-shadow: 0 0 18px color-mix(in oklab, var(--color-accent) 90%, transparent); transform: translateY(-1px); }
+    18%  { text-shadow: 0 0 0 transparent; transform: translateY(0); }
     100% { text-shadow: 0 0 0 transparent; transform: translateY(0); }
   }
   @keyframes scy-bounce {
     0%   { transform: translateY(0); }
-    3%   { transform: translateY(2px); }
-    8%   { transform: translateY(0); }
+    8%   { transform: translateY(2px); }
+    18%  { transform: translateY(0); }
     100% { transform: translateY(0); }
   }
   @keyframes scy-link {
     0%   { color: color-mix(in oklab, var(--color-accent) 38%, transparent); }
-    4%   { color: var(--color-accent); }
-    9%   { color: color-mix(in oklab, var(--color-accent) 38%, transparent); }
+    10%  { color: var(--color-accent); }
+    20%  { color: color-mix(in oklab, var(--color-accent) 38%, transparent); }
     100% { color: color-mix(in oklab, var(--color-accent) 38%, transparent); }
   }
 
   @media (max-width: 640px) {
     .scytale-caption { font-size: 9px; }
     .scytale-caption .hint { font-size: 8px; padding: 3px 7px; }
+    .scytale-pager .pip { width: 12px; height: 3px; }
+    .scytale-pager .pip.active { width: 18px; }
   }
 </style>
+
+<script is:inline define:vars={{ bandId }}>
+  (() => {
+    const band = document.getElementById(bandId);
+    if (!band) return;
+    const strip = band.querySelector('.scytale-strip');
+    if (!strip) return;
+
+    const cycle = JSON.parse(band.dataset.cycle || '[]');
+    const spacing = parseInt(band.dataset.spacing || '5', 10);
+    const cycleMs = parseInt(band.dataset.cycleMs || '5500', 10);
+    const seed = band.dataset.seed || '';
+
+    if (cycle.length <= 1) return;
+
+    // Honor reduced-motion: skip cycling entirely.
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduceMotion) return;
+
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    function seedFromString(s) {
+      let h = 2166136261;
+      for (let i = 0; i < s.length; i++) {
+        h = ((h ^ s.charCodeAt(i)) * 16777619) >>> 0;
+      }
+      return h;
+    }
+
+    function buildCipher(message) {
+      let rng = seedFromString(seed || message);
+      const next = () => {
+        rng = (rng * 1103515245 + 12345) >>> 0;
+        return alphabet[rng % 26];
+      };
+      const chars = message.split('');
+      let html = '';
+      chars.forEach((mc, mi) => {
+        const isSpace = mc === ' ';
+        const cipherCh = isSpace ? '/' : mc;
+        const decodedCh = isSpace ? '\u00A0' : mc;
+        html += '<div class="col key' + (isSpace ? ' space' : '') + '" style="--mi: ' + mi + ';">'
+              + '<span class="cipher">' + cipherCh + '</span>'
+              + '<span class="link" aria-hidden="true">|</span>'
+              + '<span class="decoded">' + decodedCh + '</span>'
+              + '</div>';
+        if (mi < chars.length - 1) {
+          for (let j = 0; j < spacing - 1; j++) {
+            html += '<div class="col"><span class="cipher">' + next() + '</span></div>';
+          }
+        }
+      });
+      return html;
+    }
+
+    const pips = Array.from(band.querySelectorAll('.scytale-pager .pip'));
+    let idx = 0;
+    let timer = null;
+
+    function swapTo(newIdx) {
+      idx = ((newIdx % cycle.length) + cycle.length) % cycle.length;
+      band.classList.add('fading');
+      setTimeout(() => {
+        strip.innerHTML = buildCipher(cycle[idx]);
+        band.setAttribute('aria-label', 'Scytale cipher decoding to: "' + cycle[idx] + '"');
+        pips.forEach((p, i) => p.classList.toggle('active', i === idx));
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            band.classList.remove('fading');
+            // Re-trigger the wave: toggle .animated to restart the animations.
+            band.classList.remove('animated');
+            void band.offsetWidth;
+            band.classList.add('animated');
+          });
+        });
+      }, 400);
+    }
+
+    function startTimer() {
+      if (timer) clearInterval(timer);
+      timer = setInterval(() => swapTo(idx + 1), cycleMs);
+    }
+
+    pips.forEach((pip, i) => {
+      pip.addEventListener('click', () => {
+        swapTo(i);
+        startTimer();
+      });
+    });
+
+    // Pause cycling when the tab is hidden (saves battery, avoids drift).
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        if (timer) { clearInterval(timer); timer = null; }
+      } else {
+        startTimer();
+      }
+    });
+
+    startTimer();
+  })();
+</script>
