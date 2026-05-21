@@ -1,80 +1,249 @@
 ---
 /**
- * ScytaleBand: brand motif divider.
- * Two-or-three rows of monospace characters offset like text wrapped around a cylinder.
- * Pure CSS, no images. Reused as a section break on Home and as a header device on About.
+ * ScytaleBand: brand motif divider that demonstrates the cipher.
+ *
+ * Renders an encoded strip + its decoded twin below, vertically aligned column-by-column
+ * so the viewer literally SEES the relationship ("every Nth char down = the message").
+ * A subtle wave animation pulses through the key cells left-to-right every ~14s,
+ * showing the read order. A "what?" pill links to the about page for the full story.
  */
 interface Props {
-  rows?: string[];
+  message?: string;     // plaintext the cipher decodes to
+  spacing?: number;     // "key" / cylinder diameter; every Nth column is part of the message
   variant?: 'default' | 'compact';
-  showLegend?: boolean;
+  animate?: boolean;
+  seed?: string;        // override for the random filler seed (defaults to message)
 }
 const {
-  rows = [
-    'P·R·I·N·C·I·P·A·L··P·M··O·R·A·C·L·E··N·E·T·S·U·I·T·E··M·Á·L·A·G·A··σ·κ·υ·τ·ά·λ·η',
-    'A·N·D·R·E·A··G·I·G·A·N·T·E··B·R·I·D·G·E·S··B·U·S·I·N·E·S·S··A·N·D··T·H·E··S·T·A·C·K',
-    'F·I·N·A·N·C·E··S·P·O·R·T·S·B·E·T··I·N·S·U·R·A·N·C·E··A·U·T·O·M·O·T·I·V·E··A·I',
-  ],
+  message = "SHIPS REAL TOOLS",
+  spacing = 5,
   variant = 'default',
-  showLegend = true,
+  animate = true,
+  seed,
 } = Astro.props;
+
+// Deterministic filler chars so the cipher is stable across builds
+const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+function seedFromString(s: string) {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) h = (h ^ s.charCodeAt(i)) * 16777619 >>> 0;
+  return h;
+}
+let rng = seedFromString(seed ?? message);
+function nextFiller() {
+  rng = (rng * 1103515245 + 12345) >>> 0;
+  return alphabet[rng % 26];
+}
+
+// Build the column layout: each message char is a "key" column (cipher char on top,
+// decoded char below); between message chars sit (spacing-1) "filler" columns
+// with only a cipher char (dim).
+const messageChars = message.split('');
+type Col = { cipher: string; decoded?: string; key: boolean; isSpace?: boolean; mi?: number };
+const cols: Col[] = [];
+messageChars.forEach((mc, mi) => {
+  if (mc === ' ') {
+    // visualise message spaces with a slash so the grid stays solid
+    cols.push({ cipher: '/', decoded: ' ', key: true, isSpace: true, mi });
+  } else {
+    cols.push({ cipher: mc, decoded: mc, key: true, mi });
+  }
+  if (mi < messageChars.length - 1) {
+    for (let j = 0; j < spacing - 1; j++) {
+      cols.push({ cipher: nextFiller(), key: false });
+    }
+  }
+});
+
+const ord = (n: number) => n === 1 ? '1st' : n === 2 ? '2nd' : n === 3 ? '3rd' : `${n}th`;
+const ariaLabel = `Scytale cipher: ${cols.map(c => c.cipher).join('')} decodes to "${message}" by reading every ${ord(spacing)} character.`;
 ---
 
-<div class:list={['scytale-band', variant]} aria-hidden="true">
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-    {rows.map((r, i) => (
-      <div class:list={['scytale-row', i === 1 && 'bright']}>{r}</div>
-    ))}
-    {showLegend && (
-      <div class="scytale-legend">
-        <span>// motif</span>
-        <b>scytale.band</b>
-      </div>
-    )}
+<aside
+  class:list={['scytale-band', variant, animate && 'animated']}
+  role="img"
+  aria-label={ariaLabel}
+>
+  <!-- Strip: columns of (cipher / link / decoded), vertically aligned -->
+  <div class="scytale-strip-wrap">
+    <div class="scytale-strip">
+      {cols.map(col => (
+        <div
+          class:list={['col', col.key && 'key', col.isSpace && 'space']}
+          style={col.mi !== undefined ? `--mi: ${col.mi};` : undefined}
+        >
+          <span class="cipher">{col.cipher}</span>
+          {col.key && col.decoded !== undefined && (
+            <>
+              <span class="link" aria-hidden="true">|</span>
+              <span class="decoded">{col.decoded === ' ' ? '\u00A0' : col.decoded}</span>
+            </>
+          )}
+        </div>
+      ))}
+    </div>
   </div>
-</div>
+
+  <!-- Caption: self-explanatory legend + "what?" pill -->
+  <div class="scytale-caption">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3">
+      <span class="lab">
+        // <span>scytale cipher</span>
+        <span class="dot">·</span>
+        key=<span class="key-num">{spacing}</span>
+        <span class="dot">·</span>
+        <span class="hint-inline">read every {ord(spacing)} character ↓</span>
+      </span>
+      <a
+        href="/about#origin"
+        class="hint"
+        aria-label="What is a scytale?"
+        title="A scytale (σκυτάλη) is an ancient Spartan transposition cipher. Wrap a strip of parchment around a cylinder of a specific diameter and hidden characters align into a readable message. Click to read more."
+      >what?</a>
+    </div>
+  </div>
+</aside>
 
 <style>
   .scytale-band {
     border-top: 1px solid var(--color-border);
     border-bottom: 1px solid var(--color-border);
     background: linear-gradient(to bottom, var(--color-bg) 0%, color-mix(in oklab, var(--color-bg) 92%, black) 100%);
-    padding: 22px 0;
+    padding: 24px 0 14px;
     overflow: hidden;
     position: relative;
   }
-  .scytale-band.compact { padding: 14px 0; }
-  .scytale-row {
+  .scytale-band.compact { padding: 16px 0 10px; }
+
+  /* Strip stage: hides overflow, fades edges so clipped chars feel intentional */
+  .scytale-strip-wrap {
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 7%, black 93%, transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0%, black 7%, black 93%, transparent 100%);
+  }
+  .scytale-strip {
+    display: flex;
+    justify-content: center;
+    gap: 0;
     font-family: var(--font-mono);
-    font-size: 14px;
-    letter-spacing: 0.34em;
-    color: color-mix(in oklab, var(--color-text) 18%, transparent);
-    white-space: nowrap;
-    padding: 3px 0;
     user-select: none;
   }
-  .scytale-row.bright { color: var(--color-text); }
-  .scytale-legend {
-    position: absolute;
-    right: 24px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: linear-gradient(to left, var(--color-bg) 30%, transparent);
-    padding-left: 60px;
+
+  /* Each column stacks cipher char + link + decoded char vertically */
+  .col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 19px;
+    flex-shrink: 0;
+  }
+  .col .cipher {
+    font-size: 13px;
+    line-height: 1.2;
+    color: color-mix(in oklab, var(--color-text) 22%, transparent);
+    transition: color .3s, text-shadow .3s, transform .3s;
+  }
+  .col.key .cipher {
+    color: var(--color-accent);
+    font-weight: 500;
+  }
+  .col.space .cipher {
+    color: color-mix(in oklab, var(--color-accent) 55%, transparent);
+  }
+  .col .link {
+    font-size: 7px;
+    line-height: 1;
+    color: color-mix(in oklab, var(--color-accent) 38%, transparent);
+    margin: 2px 0 1px;
+    transition: color .3s;
+  }
+  .col .decoded {
+    font-size: 13px;
+    line-height: 1.2;
+    color: var(--color-accent);
+    font-weight: 600;
+  }
+
+  /* Caption */
+  .scytale-caption {
+    margin-top: 12px;
     font-family: var(--font-mono);
     font-size: 10px;
     color: var(--color-text-muted);
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
   }
-  .scytale-legend b {
+  .scytale-caption .lab {
+    line-height: 1.4;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .scytale-caption .dot { opacity: 0.5; }
+  .scytale-caption .key-num,
+  .scytale-caption .hint-inline { color: var(--color-accent); }
+  .scytale-caption .hint {
+    flex-shrink: 0;
+    padding: 4px 9px;
+    border-radius: 3px;
+    border: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+    text-decoration: none;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    transition: all .2s;
+    cursor: help;
+  }
+  .scytale-caption .hint:hover {
+    border-color: var(--color-accent);
     color: var(--color-accent);
-    font-weight: 500;
+    background: color-mix(in oklab, var(--color-accent) 8%, transparent);
   }
-  @media (max-width: 768px) {
-    .scytale-legend { display: none; }
+
+  /*
+    Animation: a wave pulses left-to-right through the key columns every 14s.
+    Each column's cipher char glows briefly, the link "|" brightens, then the
+    decoded char bounces, telling the read story one column at a time.
+    animation-delay staggers each column by its message index.
+  */
+  @media (prefers-reduced-motion: no-preference) {
+    .scytale-band.animated .col.key .cipher {
+      animation: scy-pulse 14s ease-out infinite;
+      animation-delay: calc(var(--mi, 0) * 0.12s);
+    }
+    .scytale-band.animated .col.key .link {
+      animation: scy-link 14s ease-out infinite;
+      animation-delay: calc(var(--mi, 0) * 0.12s + 0.08s);
+    }
+    .scytale-band.animated .col.key .decoded {
+      animation: scy-bounce 14s ease-out infinite;
+      animation-delay: calc(var(--mi, 0) * 0.12s + 0.18s);
+    }
+  }
+  @keyframes scy-pulse {
+    0%   { text-shadow: 0 0 0 transparent; transform: translateY(0); }
+    3%   { text-shadow: 0 0 18px color-mix(in oklab, var(--color-accent) 90%, transparent); transform: translateY(-1px); }
+    8%   { text-shadow: 0 0 0 transparent; transform: translateY(0); }
+    100% { text-shadow: 0 0 0 transparent; transform: translateY(0); }
+  }
+  @keyframes scy-bounce {
+    0%   { transform: translateY(0); }
+    3%   { transform: translateY(2px); }
+    8%   { transform: translateY(0); }
+    100% { transform: translateY(0); }
+  }
+  @keyframes scy-link {
+    0%   { color: color-mix(in oklab, var(--color-accent) 38%, transparent); }
+    4%   { color: var(--color-accent); }
+    9%   { color: color-mix(in oklab, var(--color-accent) 38%, transparent); }
+    100% { color: color-mix(in oklab, var(--color-accent) 38%, transparent); }
+  }
+
+  @media (max-width: 640px) {
+    .col { width: 16px; }
+    .col .cipher, .col .decoded { font-size: 11px; }
+    .scytale-caption { font-size: 9px; }
+    .scytale-caption .hint { font-size: 8px; padding: 3px 7px; }
   }
 </style>
