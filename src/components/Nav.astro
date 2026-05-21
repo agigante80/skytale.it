@@ -14,10 +14,16 @@ const currentPath = Astro.url.pathname;
 <nav class="sticky top-0 z-50 backdrop-blur-md bg-[var(--color-bg)]/80 border-b border-[var(--color-border)]">
   <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex items-center justify-between h-16">
-      <!-- Logo -->
-      <a href="/" class="font-heading text-xl font-bold text-[var(--color-accent)] hover:text-[var(--color-accent-hover)] transition-colors" style="font-family: var(--font-heading);">
-        Skytale<span class="text-[var(--color-text-muted)]">.it</span>
-      </a>
+      <!-- Logo + shipping pulse -->
+      <div class="flex items-center gap-4">
+        <a href="/" class="text-xl font-bold text-[var(--color-accent)] hover:text-[var(--color-accent-hover)] transition-colors" style="font-family: var(--font-display);">
+          Skytale<span class="text-[var(--color-text-muted)]">.it</span>
+        </a>
+        <div class="hidden sm:flex items-center gap-2 pl-4 border-l border-[var(--color-border)]" aria-label="Site is actively maintained">
+          <span class="pulse-dot"></span>
+          <span class="text-[10px] tracking-[0.12em] uppercase text-[var(--color-text-muted)]" style="font-family: var(--font-mono);">Shipping</span>
+        </div>
+      </div>
 
       <!-- Desktop nav -->
       <div class="hidden md:flex items-center gap-1">
@@ -25,11 +31,12 @@ const currentPath = Astro.url.pathname;
           <a
             href={item.href}
             class:list={[
-              'px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+              'px-3 py-2 rounded-lg text-xs font-medium uppercase tracking-[0.08em] transition-colors',
               currentPath === item.href
                 ? 'text-[var(--color-accent)] bg-[var(--color-surface)]'
                 : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface)]'
             ]}
+            style="font-family: var(--font-mono);"
           >
             {item.label}
           </a>
@@ -60,11 +67,12 @@ const currentPath = Astro.url.pathname;
         <a
           href={item.href}
           class:list={[
-            'block px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+            'block px-3 py-2 rounded-lg text-xs font-medium uppercase tracking-[0.08em] transition-colors',
             currentPath === item.href
               ? 'text-[var(--color-accent)] bg-[var(--color-surface)]'
               : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface)]'
           ]}
+          style="font-family: var(--font-mono);"
         >
           {item.label}
         </a>
@@ -72,6 +80,24 @@ const currentPath = Astro.url.pathname;
     </div>
   </div>
 </nav>
+
+<style>
+  .pulse-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--color-accent) 60%, transparent);
+    animation: pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.45; box-shadow: 0 0 0 0 color-mix(in oklab, var(--color-accent) 50%, transparent); }
+    50% { opacity: 1; box-shadow: 0 0 0 6px color-mix(in oklab, var(--color-accent) 0%, transparent); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pulse-dot { animation: none; opacity: 0.8; }
+  }
+</style>
 
 <script is:inline data-astro-rerun>
   document.getElementById('mobile-menu-btn').addEventListener('click', () => {
