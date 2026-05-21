@@ -1,43 +1,47 @@
 @import "tailwindcss";
 
-/* Fonts */
-@import "@fontsource-variable/space-grotesk";
+/* Fonts: two-font system: JetBrains Mono leads, Inter for body */
 @import "@fontsource-variable/inter";
 @import "@fontsource-variable/jetbrains-mono";
 
-/* Design Tokens  - these are Tailwind theme values */
+/* Design Tokens: Tailwind theme values */
 @theme {
-  --font-heading: "Space Grotesk Variable", system-ui, sans-serif;
+  --font-display: "JetBrains Mono Variable", ui-monospace, monospace;
   --font-body: "Inter Variable", system-ui, sans-serif;
   --font-mono: "JetBrains Mono Variable", monospace;
 
-  --color-accent: #82bfce;
+  /* legacy alias: components that still read --font-heading keep working */
+  --font-heading: "JetBrains Mono Variable", ui-monospace, monospace;
+
+  --color-accent: #7ec6d6;
   --color-accent-hover: #a3d5e0;
-  --color-cta: #f59e0b;
+  --color-accent-soft: #1d3641;
 }
 
-/* Adaptive tokens  - swap on .light */
+/* Adaptive tokens: swap on .light */
 :root {
-  --color-bg: #0f172a;
-  --color-surface: #1e293b;
-  --color-border: #334155;
-  --color-text: #f1f5f9;
-  --color-text-muted: #94a3b8;
+  --color-bg: #0a0c11;
+  --color-surface: #12161d;
+  --color-surface-2: #1a1f27;
+  --color-border: #232a34;
+  --color-text: #ece9e1;
+  --color-text-muted: #8a8a82;
 }
 
 html.light {
-  --color-bg: #f8fafc;
+  --color-bg: #f5f0e3;
   --color-surface: #ffffff;
-  --color-border: #e2e8f0;
-  --color-text: #1e293b;
-  --color-text-muted: #64748b;
-  --color-accent: #5fa8b8;
+  --color-surface-2: #ece6d8;
+  --color-border: #d6cfbe;
+  --color-text: #14161a;
+  --color-text-muted: #6c6960;
+  --color-accent: #2a6b78;
+  --color-accent-hover: #3a8694;
+  --color-accent-soft: #d9ecf0;
 }
 
 /* Base styles */
-html {
-  scroll-behavior: smooth;
-}
+html { scroll-behavior: smooth; }
 
 body {
   font-family: var(--font-body);
@@ -47,7 +51,8 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-heading);
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
 }
 
 code, pre, .font-mono {

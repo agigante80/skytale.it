@@ -1,0 +1,80 @@
+---
+/**
+ * ScytaleBand: brand motif divider.
+ * Two-or-three rows of monospace characters offset like text wrapped around a cylinder.
+ * Pure CSS, no images. Reused as a section break on Home and as a header device on About.
+ */
+interface Props {
+  rows?: string[];
+  variant?: 'default' | 'compact';
+  showLegend?: boolean;
+}
+const {
+  rows = [
+    'P·R·I·N·C·I·P·A·L··P·M··O·R·A·C·L·E··N·E·T·S·U·I·T·E··M·Á·L·A·G·A··σ·κ·υ·τ·ά·λ·η',
+    'A·N·D·R·E·A··G·I·G·A·N·T·E··B·R·I·D·G·E·S··B·U·S·I·N·E·S·S··A·N·D··T·H·E··S·T·A·C·K',
+    'F·I·N·A·N·C·E··S·P·O·R·T·S·B·E·T··I·N·S·U·R·A·N·C·E··A·U·T·O·M·O·T·I·V·E··A·I',
+  ],
+  variant = 'default',
+  showLegend = true,
+} = Astro.props;
+---
+
+<div class:list={['scytale-band', variant]} aria-hidden="true">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+    {rows.map((r, i) => (
+      <div class:list={['scytale-row', i === 1 && 'bright']}>{r}</div>
+    ))}
+    {showLegend && (
+      <div class="scytale-legend">
+        <span>// motif</span>
+        <b>scytale.band</b>
+      </div>
+    )}
+  </div>
+</div>
+
+<style>
+  .scytale-band {
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    background: linear-gradient(to bottom, var(--color-bg) 0%, color-mix(in oklab, var(--color-bg) 92%, black) 100%);
+    padding: 22px 0;
+    overflow: hidden;
+    position: relative;
+  }
+  .scytale-band.compact { padding: 14px 0; }
+  .scytale-row {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    letter-spacing: 0.34em;
+    color: color-mix(in oklab, var(--color-text) 18%, transparent);
+    white-space: nowrap;
+    padding: 3px 0;
+    user-select: none;
+  }
+  .scytale-row.bright { color: var(--color-text); }
+  .scytale-legend {
+    position: absolute;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: linear-gradient(to left, var(--color-bg) 30%, transparent);
+    padding-left: 60px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--color-text-muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .scytale-legend b {
+    color: var(--color-accent);
+    font-weight: 500;
+  }
+  @media (max-width: 768px) {
+    .scytale-legend { display: none; }
+  }
+</style>

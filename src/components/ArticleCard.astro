@@ -10,13 +10,36 @@ interface Props {
   slug: string;
 }
 
-const { title, description, date, tags, url, platform, image, slug } = Astro.props;
+const { title, description, date, tags, platform, image, slug } = Astro.props;
 const formattedDate = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+const stampDate = date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' }).replaceAll('/', '·');
+
+// Generate a deterministic cipher-look "preview" from the slug; pure decoration.
+const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+function seedFromString(s: string) {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) h = (h ^ s.charCodeAt(i)) * 16777619 >>> 0;
+  return h;
+}
+function cipherLine(seed: number, length: number) {
+  let s = seed;
+  let out = '';
+  for (let i = 0; i < length; i++) {
+    s = (s * 1103515245 + 12345) >>> 0;
+    out += alphabet[s % 26];
+    if (i < length - 1) out += '·';
+  }
+  return out;
+}
+const seed = seedFromString(slug);
+const cipherRows = [
+  cipherLine(seed, 7),
+  cipherLine(seed + 17, 7),
+];
 ---
 
 <article class="group rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] transition-all hover:border-[var(--color-accent)]/50 hover:shadow-lg hover:shadow-[var(--color-accent)]/5 overflow-hidden">
   <a href={`/articles/${slug}`} class="block">
-    {/* Cover image */}
     {image ? (
       <div class="aspect-video overflow-hidden bg-[var(--color-bg)]">
         <img
@@ -27,10 +50,13 @@ const formattedDate = date.toLocaleDateString('en-US', { year: 'numeric', month:
         />
       </div>
     ) : (
-      <div class="aspect-video bg-[var(--color-bg)] flex items-center justify-center">
-        <span class="text-3xl text-[var(--color-accent)] opacity-30" style="font-family: var(--font-heading);">
-          {platform === 'medium' ? 'M' : 'in'}
-        </span>
+      <div class="cipher-cover aspect-video">
+        <div class="cipher-rows">
+          {cipherRows.map((row, i) => (
+            <div class:list={['cipher-row', i === 1 && 'bright']}>{row}</div>
+          ))}
+        </div>
+        <div class="cipher-stamp">// FILED {stampDate}</div>
       </div>
     )}
 
@@ -39,21 +65,18 @@ const formattedDate = date.toLocaleDateString('en-US', { year: 'numeric', month:
         <time class="text-xs text-[var(--color-text-muted)]" style="font-family: var(--font-mono);" datetime={date.toISOString()}>
           {formattedDate}
         </time>
-        {/* Platform badge */}
         {platform === 'medium' ? (
-          <span class="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-[var(--color-border)] text-[var(--color-text-muted)]">
-            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M13.54 12a6.8 6.8 0 01-6.77 6.82A6.8 6.8 0 010 12a6.8 6.8 0 016.77-6.82A6.8 6.8 0 0113.54 12zm7.42 0c0 3.54-1.51 6.42-3.38 6.42-1.87 0-3.39-2.88-3.39-6.42s1.52-6.42 3.39-6.42 3.38 2.88 3.38 6.42M24 12c0 3.17-.53 5.75-1.19 5.75-.66 0-1.19-2.58-1.19-5.75s.53-5.75 1.19-5.75C23.47 6.25 24 8.83 24 12z"/></svg>
-            Medium
+          <span class="text-[10px] uppercase tracking-[0.12em] text-[var(--color-accent)] inline-flex items-center gap-1" style="font-family: var(--font-mono);">
+            ↗ Medium
           </span>
         ) : (
-          <span class="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-[var(--color-border)] text-[var(--color-text-muted)]">
-            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-            LinkedIn
+          <span class="text-[10px] uppercase tracking-[0.12em] text-[var(--color-accent)] inline-flex items-center gap-1" style="font-family: var(--font-mono);">
+            ↗ LinkedIn
           </span>
         )}
       </div>
 
-      <h3 class="mt-2 text-lg font-semibold text-[var(--color-text)] group-hover:text-[var(--color-accent)] transition-colors" style="font-family: var(--font-heading);">
+      <h3 class="mt-2 text-lg font-semibold text-[var(--color-text)] group-hover:text-[var(--color-accent)] transition-colors" style="font-family: var(--font-display);">
         {title}
       </h3>
 
@@ -64,7 +87,7 @@ const formattedDate = date.toLocaleDateString('en-US', { year: 'numeric', month:
       {tags.length > 0 && (
         <div class="mt-4 flex flex-wrap gap-2">
           {tags.map(tag => (
-            <span class="text-xs px-2 py-0.5 rounded bg-[var(--color-border)] text-[var(--color-text-muted)]" style="font-family: var(--font-mono);">
+            <span class="text-[10px] px-2 py-0.5 rounded border border-[var(--color-border)] text-[var(--color-text-muted)] tracking-[0.04em] uppercase" style="font-family: var(--font-mono);">
               {tag}
             </span>
           ))}
@@ -78,3 +101,39 @@ const formattedDate = date.toLocaleDateString('en-US', { year: 'numeric', month:
     </div>
   </a>
 </article>
+
+<style>
+  .cipher-cover {
+    background:
+      repeating-linear-gradient(45deg, color-mix(in oklab, var(--color-accent) 8%, transparent) 0 10px, transparent 10px 22px),
+      linear-gradient(135deg, color-mix(in oklab, var(--color-accent) 15%, var(--color-bg)) 0%, var(--color-bg) 100%);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .cipher-rows {
+    text-align: center;
+    line-height: 1.7;
+  }
+  .cipher-row {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.3em;
+    color: color-mix(in oklab, var(--color-accent) 30%, transparent);
+  }
+  .cipher-row.bright {
+    color: var(--color-accent);
+  }
+  .cipher-stamp {
+    position: absolute;
+    bottom: 12px;
+    right: 14px;
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    color: var(--color-text-muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+</style>
