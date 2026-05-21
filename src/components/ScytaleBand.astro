@@ -115,11 +115,16 @@ const ariaLabel = `Scytale cipher: ${cols.map(c => c.cipher).join('')} decodes t
   }
   .scytale-band.compact { padding: 16px 0 10px; }
 
-  /* Strip stage: hides overflow, fades edges so clipped chars feel intentional */
+  /*
+    Strip fits the container exactly; never overflows. Each column is a flex unit
+    that shares the available width equally. Chars scale via clamp() so the full
+    message is always visible end-to-end, no matter the viewport.
+  */
   .scytale-strip-wrap {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 16px;
     overflow: hidden;
-    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 7%, black 93%, transparent 100%);
-    mask-image: linear-gradient(to right, transparent 0%, black 7%, black 93%, transparent 100%);
   }
   .scytale-strip {
     display: flex;
@@ -129,16 +134,18 @@ const ariaLabel = `Scytale cipher: ${cols.map(c => c.cipher).join('')} decodes t
     user-select: none;
   }
 
-  /* Each column stacks cipher char + link + decoded char vertically */
+  /* Each column stacks cipher char + link + decoded char vertically.
+     flex: 1 1 0 shares container width equally; max-width caps very wide viewports. */
   .col {
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 19px;
-    flex-shrink: 0;
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: 20px;
   }
   .col .cipher {
-    font-size: 13px;
+    font-size: clamp(10px, 1.05vw, 13px);
     line-height: 1.2;
     color: color-mix(in oklab, var(--color-text) 22%, transparent);
     transition: color .3s, text-shadow .3s, transform .3s;
@@ -151,14 +158,14 @@ const ariaLabel = `Scytale cipher: ${cols.map(c => c.cipher).join('')} decodes t
     color: color-mix(in oklab, var(--color-accent) 55%, transparent);
   }
   .col .link {
-    font-size: 7px;
+    font-size: clamp(6px, 0.55vw, 8px);
     line-height: 1;
     color: color-mix(in oklab, var(--color-accent) 38%, transparent);
     margin: 2px 0 1px;
     transition: color .3s;
   }
   .col .decoded {
-    font-size: 13px;
+    font-size: clamp(10px, 1.05vw, 13px);
     line-height: 1.2;
     color: var(--color-accent);
     font-weight: 600;
@@ -241,8 +248,6 @@ const ariaLabel = `Scytale cipher: ${cols.map(c => c.cipher).join('')} decodes t
   }
 
   @media (max-width: 640px) {
-    .col { width: 16px; }
-    .col .cipher, .col .decoded { font-size: 11px; }
     .scytale-caption { font-size: 9px; }
     .scytale-caption .hint { font-size: 8px; padding: 3px 7px; }
   }
