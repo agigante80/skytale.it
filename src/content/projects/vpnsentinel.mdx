@@ -1,38 +1,90 @@
 ---
 title: "VPNSentinel"
-description: "Distributed VPN monitoring system with DNS leak detection, multi-node health checks, and real-time alerting. Ensures your VPN infrastructure stays secure."
+description: "Monitors VPN connections in real time, catching DNS leaks and silent bypasses with instant Telegram alerts and a traffic light dashboard."
 category: "Security"
 tier: 1
-status: "active"
-techStack: ["Python", "Flask", "DNS", "Docker"]
+status: "maintained"
+tagline: "Know the moment your VPN stops protecting you."
+techStack: ["Python", "Flask", "Docker", "Telegram Bot API", "Bash", "Alpine Linux"]
 githubUrl: "https://github.com/agigante80/VPNSentinel"
 featured: true
-metrics: "DNS leak detection | Distributed monitoring"
-lastSyncedFrom: "2026-05-20T12:52:25Z"
+links:
+  dockerHub: "https://hub.docker.com/r/agigante80/vpn-sentinel-server"
+stats:
+  - value: "125"
+    label: "Unit tests"
+  - value: "116"
+    label: "Integration tests"
+  - value: "3"
+    label: "Status states"
+    sub: "Green, yellow, red"
+quickstart:
+  primaryLabel: "Run with Docker Compose"
+  primaryCode: "git clone https://github.com/agigante80/VPNSentinel.git\ncd VPNSentinel\ncp .env.example .env\ndocker compose up -d"
+  altLabel: "Server only"
+  altCode: "docker compose up -d vpn-sentinel-server"
+  docsHref: "https://github.com/agigante80/VPNSentinel#quick-start"
+lastSyncedFrom: "2026-05-22T00:00:00Z"
 ---
 
-## What is VPNSentinel?
+## The problem
 
-VPNSentinel is a distributed monitoring system built with Python and Flask that continuously verifies VPN integrity across multiple network vantage points. Unlike basic connectivity checkers that only confirm a VPN tunnel is "up," VPNSentinel actively probes for DNS leaks, verifies traffic routing through the expected exit nodes, monitors latency degradation, and sends real-time alerts when protection gaps are detected.
+A VPN can show "connected" while leaking everything you wanted it to hide. Two failures cause this, and neither is visible to the person using the VPN.
 
-## The Problem
+The first is a silent tunnel drop. The connection falls back to direct routing, your real IP is exposed, and the VPN client still shows a green icon because the process is technically running. The second is a DNS leak. Your traffic goes through the tunnel, but DNS queries get answered by your ISP's resolver, so your browsing history and rough location leak even though the IP looks correct.
 
-VPN services can silently fail in ways that are invisible to the user. A DNS leak sends your domain lookups over the ISP's resolver instead of the VPN tunnel  - your browsing history is exposed even though the VPN icon shows "connected." Misconfigured routes can split traffic so that some applications bypass the tunnel entirely. Most monitoring tools check if a VPN is connected but never verify whether it's actually protecting you. I wanted a system that would catch these subtle failures.
+Most VPN clients ship no monitoring at all. The ones that do only check whether the tunnel process is alive, which is the one thing that stays true during both failure modes. I wanted something that verifies the VPN is actually doing its job, not just that it is running, and that tells me the instant it stops.
 
-## How I Built It
+## What this does that the others do not
 
-The key insight was that single-node monitoring has a blind spot: if your monitoring node is on the same network as your VPN client, it shares the same failure mode. A DNS leak on the client affects the monitor too. So I designed VPNSentinel with a distributed architecture where monitoring probes run on separate networks and compare results.
+### It verifies protection, not connectivity
 
-Each probe performs three types of checks: DNS resolution comparison (resolving the same domain through the VPN tunnel and through a known public resolver, then comparing results), IP verification (confirming the client's apparent public IP matches the expected VPN exit node), and latency baseline tracking (detecting sudden drops that indicate the tunnel has fallen back to direct routing, which is typically faster but unprotected).
+A ping test confirms a tunnel carries packets. It does not confirm those packets exit where they should. VPNSentinel checks the client's apparent public IP, its geolocation, and its DNS resolution location, then decides whether the VPN is genuinely protecting traffic. Connectivity is necessary but not the question being asked.
 
-The Flask dashboard aggregates results from all probes and renders a real-time status view. Alert rules are configurable  - you can set thresholds for latency deviation, DNS mismatch counts, and IP changes before an alert fires.
+### It catches the bypass with a same-IP comparison
+
+The core check is deliberately blunt. The client reports the public IP it sees from inside the VPN container. The server knows its own public IP. If those two match, traffic is not going through the tunnel at all, because the client is exiting from the same place as the unprotected server. That triggers a red critical alert. It is a simple rule, but it reliably catches the worst failure with no false sense of safety.
+
+### It separates DNS leaks from IP leaks
+
+A leak is not one thing. The client can have a perfect VPN exit IP and still resolve DNS through the wrong country. VPNSentinel reports these as distinct states: green means the IP is protected and DNS resolves where the VPN exit lives, yellow means the IP is fine but DNS is leaking or unverifiable, red means the IP itself is exposed. Collapsing those into a single up/down flag would hide the most common real-world failure.
+
+### It tells you without you looking
+
+Monitoring nobody reads is not monitoring. Every status change goes to Telegram with the client name, IP, location, provider, and DNS detail. A connect message looks different from a DNS leak warning, which looks different from a bypass alarm. The dashboard is there when you want the full picture, but the alert reaches you whether or not you are watching.
 
 ## Architecture
 
-A central Flask server coordinates distributed monitoring nodes. Each node runs independently, performing scheduled health checks and reporting results back via REST API. The server stores historical data for trend analysis and exposes a web dashboard. Docker packaging lets you spin up monitoring nodes on different networks  - a VPS in one country, a home server in another  - to get true multi-vantage-point coverage.
+VPNSentinel is a client-server system, and the network placement of each half is the whole design. The client runs inside the VPN container's network namespace using Docker's `network_mode: service:vpn-container`, so every packet it sends, including its own monitoring traffic, is forced through the tunnel. The server runs on the host network instead, deliberately outside the VPN, because it needs a stable public identity to compare against. The client reaches the server over the public internet rather than a Docker bridge, which means the keepalive itself is proof the tunnel can carry traffic.
 
-## Impact
+The server runs three Flask surfaces and a Telegram bot. The API on port 5000 receives keepalives, the dashboard on 8080 renders traffic lights and a live log viewer, and a health endpoint on 8081 answers container health checks. Geolocation comes from external services such as ipinfo.io, with the server caching its own IP to keep API calls down. Stale clients are auto-removed after a configurable timeout.
 
-- Catches DNS leaks that simple VPN connectivity monitors miss entirely
-- Distributed architecture eliminates the single-point-of-failure problem in VPN monitoring
-- Real-time alerts with configurable thresholds  - no more silently exposed traffic
+```
+        VPN container                          Host network
+ +---------------------------+        +----------------------------+
+ |  VPN client (OpenVPN/WG)  |        |   VPNSentinel server       |
+ |  VPNSentinel client       |        |   API   :5000  keepalives  |
+ |   checks public IP        |        |   Web   :8080  dashboard   |
+ |   tests DNS leaks         |        |   Health:8081  checks      |
+ |   sends keepalives        |        |   Telegram bot  alerts     |
+ +-------------+-------------+        +-------------+--------------+
+               |  keepalive over the public                |
+               |  internet, through the VPN tunnel         |
+               +-------------------->----------------------+
+                          server compares client IP
+                          against its own IP
+```
+
+## Decisions worth knowing about
+
+### The client lives inside the VPN namespace
+
+I could have run the client as a normal container and pointed it at a VPN. Instead it shares the VPN container's network namespace directly. This costs some deployment flexibility, because the client is now tied to a specific VPN container's lifecycle. The payoff is that there is no way for monitoring traffic to escape the tunnel by accident. If the client can reach the internet at all, it did so through the VPN, so a clean keepalive is itself a meaningful signal rather than a separate thing to trust.
+
+### The server stays outside the VPN on purpose
+
+Putting the server inside the VPN would have looked tidier and simplified the network setup. It would also have broken the central check. The whole point of comparing client IP to server IP is that the server represents an unprotected baseline. The tradeoff is honest and documented: if you deploy the server on the same network as your VPN exit, you get false bypass warnings. That is a real limitation, and I chose to keep the check simple and explain the constraint rather than add fragile logic to paper over a misconfiguration.
+
+### Telegram is the alert channel, the dashboard is the detail
+
+I did not build an email pipeline or a paging integration. A self-hosted privacy tool is usually run by one person, and that person already has Telegram. A bot token and a chat ID are a five minute setup with no SMTP server, no third-party alerting account, and no extra credentials to leak. The dashboard handles depth, with a live log viewer and per-client history, but it is pull, not push. The decision was to make the urgent path trivial to set up and leave the thorough path for when you actually want to dig in.
