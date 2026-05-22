@@ -1,59 +1,36 @@
 ---
 title: "LEGO City Undercover on Linux"
-description: "Fix notes for running LEGO City Undercover on Linux via Proton 3.7-8 on NVIDIA Optimus laptops, including obscure audio and chapter freeze bugs."
+tagline: "Every crash this game throws on Proton, named and fixed."
+description: "A reproducible fix log for running LEGO City Undercover on Linux via Proton 3.7-8, including a Chapter 15 freeze fixed nowhere else."
 category: "Utilities"
 tier: 3
 status: "maintained"
-techStack: ["Shell", "Linux", "Proton", "Steam"]
+techStack: ["Linux", "Proton", "Steam", "Wine", "udev", "Shell"]
 githubUrl: "https://github.com/agigante80/lego-city-undercover-linux"
 featured: false
-lastSyncedFrom: "2026-05-20T12:52:25Z"
+lastSyncedFrom: "2026-05-22T00:00:00Z"
+links:
+  docs: "https://github.com/agigante80/lego-city-undercover-linux/blob/main/README.md"
+stats:
+  - value: "6"
+    label: "Launch flags documented"
+    sub: "Each with a stated reason, not copied blindly"
+  - value: "5"
+    label: "Distinct failure modes solved"
+    sub: "From empty logs to mid-game deadlocks"
+  - value: "1"
+    label: "Fix unique to this repo"
+    sub: "The Chapter 15 moon transition freeze"
+quickstart:
+  primaryLabel: "Steam launch options"
+  primaryCode: '__NV_PRIME_RENDER_OFFLOAD=1 __VK_LAYER_NV_optimus=NVIDIA_only __GLX_VENDOR_LIBRARY_NAME=nvidia VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/nvidia_icd.json PULSE_LATENCY_MSEC=240 PROTON_NO_ESYNC=1 PROTON_NO_FSYNC=1 WINEDLLOVERRIDES="xaudio2_7=n,b" PROTON_LOG=1 %command%'
+  docsHref: "https://github.com/agigante80/lego-city-undercover-linux/blob/main/README.md"
 ---
 
-## What is this project?
+## The problem
 
-A complete fix log and config for running **LEGO City Undercover** (Steam App ID 578330) on Linux via Proton on an NVIDIA Optimus laptop. Every crash mode encountered is captured with its specific cause, the working fix, and the launch flag that delivers it. The repository covers a freeze at the Chapter 15 moon transition that, as of writing, is not documented anywhere else online.
+LEGO City Undercover (Steam App ID 578330) has several Linux failure modes, and each one produces a misleading symptom that sends people in the wrong direction. The audio thread deadlocks under heavy scene loads and surfaces as a cryptic critical-section timeout that looks like a GPU fault. FSYNC silently crashes the game on cutscenes. High resolutions on a dual-monitor setup freeze level transitions. Newer Proton versions page-fault on launch. Worst of all, the game freezes at the Chapter 15 moon transition, and I could not find that fix documented in any Steam thread or community wiki. I wanted a single page that names every crash, its real cause, and the exact flag that resolves it.
 
-## The Problem
+## How I built it
 
-The game has several Linux failure modes that produce misleading symptoms, so each one tends to send users in the wrong direction:
-
-- **Audio thread deadlock** under heavy scene loads, surfaces as `RtlpWaitForCriticalSection` in logs. Easy to misread as a GPU issue.
-- **Cutscene crashes** caused by Proton FSYNC. The official Proton issue exists but is buried.
-- **Level-transition freezes** at high resolutions on dual-monitor setups. The community workaround (drop in-game resolution to 1280x720) is in old forum threads.
-- **Chapter 15 moon transition freeze.** Caused by Proton 3.7's XAudio2 implementation. The fix (route XAudio2 through Wine's stub) is not documented in any Steam thread or community wiki I could find.
-
-The repository is the document that should exist for anyone trying this game on Linux for the first time.
-
-## How I Built It
-
-Systematic. Every crash got reproduced, every fix verified, every launch flag explained. The working launch string:
-
-```
-__NV_PRIME_RENDER_OFFLOAD=1 __VK_LAYER_NV_optimus=NVIDIA_only \
-__GLX_VENDOR_LIBRARY_NAME=nvidia VK_ICD_FILENAMES=...nvidia_icd.json \
-PULSE_LATENCY_MSEC=240 PROTON_NO_ESYNC=1 PROTON_NO_FSYNC=1 \
-WINEDLLOVERRIDES="xaudio2_7=n,b" PROTON_LOG=1 %command%
-```
-
-Each flag has a documented reason in the README:
-
-| Flag | What it fixes |
-|---|---|
-| Optimus / Vulkan ICD pin | Forces NVIDIA GPU, prevents Intel-side deadlock |
-| `PULSE_LATENCY_MSEC=240` | Raises PulseAudio buffer; without it, audio threads deadlock |
-| `PROTON_NO_ESYNC=1 PROTON_NO_FSYNC=1` | FSYNC is confirmed to crash this game on cutscenes |
-| `WINEDLLOVERRIDES="xaudio2_7=n,b"` | Routes XAudio2 through Wine's stub instead of Proton 3.7's buggy implementation; required to get past Chapter 15 |
-| Proton version pin **3.7-8** | Newer Proton versions break the game in different ways |
-
-In-game, set Screen Resolution to 1280×720 to dodge the level-transition freezes on high-resolution displays.
-
-## Architecture
-
-One README serves as both a troubleshooting log and a reference config. The hardware-tested column lets a reader judge how much applies to a different machine; the per-flag explanations let them adapt to a different bug. The repository is intentionally narrow in scope (one game, one platform) so it can be exhaustive on what it covers.
-
-## Impact
-
-- The Chapter 15 moon transition fix appears to be unique to this repository.
-- 15+ launch flags, each with a documented reason rather than copy-paste.
-- A reusable template for documenting other broken-on-Linux Steam titles: capture every failure, name every fix, pin every version.
+I treated it like a bug investigation rather than a forum hunt. Every crash got reproduced, every root cause confirmed in the Proton logs, and every fix verified before it went in the README. The result is one working Steam launch string where each flag earns its place: the Optimus and Vulkan ICD variables force rendering onto the NVIDIA GPU, `PULSE_LATENCY_MSEC=240` raises the PulseAudio buffer so the audio threads stop deadlocking, `PROTON_NO_ESYNC` and `PROTON_NO_FSYNC` dodge the cutscene crash, and `WINEDLLOVERRIDES="xaudio2_7=n,b"` routes XAudio2 through Wine's own stub, which is the piece that finally gets past Chapter 15. Proton is pinned to 3.7-8 because anything newer breaks the port. A small udev rule tames a noisy SHANWAN controller clone that was flooding the HID queue, and the README pairs every error-log signature with its fix so someone landing from a search lands on an answer.
