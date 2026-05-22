@@ -1,38 +1,90 @@
 ---
 title: "AgentGate"
-description: "Remote AI CLI control via Telegram and Slack with multi-agent orchestration. Control AI coding agents from your phone while they work on your infrastructure."
+description: "Drive Claude, Copilot, Codex, or Gemini CLIs on your projects from Telegram or Slack, one isolated Docker container per repo."
 category: "AI/MCP"
 tier: 1
 status: "active"
-techStack: ["Python", "Telegram API", "Slack API", "Multi-Agent"]
+techStack: ["Python", "Docker", "Telegram Bot API", "Slack API", "SQLite"]
 githubUrl: "https://github.com/agigante80/AgentGate"
 featured: true
-metrics: "Multi-agent | Remote control | Real-time"
-lastSyncedFrom: "2026-05-20T12:52:25Z"
+tagline: "Vibe-code from your phone, one container per project."
+version: "v1.4.4"
+links:
+  dockerHub: "https://hub.docker.com/r/agigante80/agentgate"
+lastSyncedFrom: "2026-05-22T00:00:00Z"
+audience:
+  - who: "Solo developers away from a desk"
+    what: "Send prompts to an AI CLI working on a real repo from any phone or tablet"
+  - who: "Multi-project maintainers"
+    what: "Run one isolated bot per repo so agents and tokens never bleed across projects"
+  - who: "Teams experimenting with agent orchestration"
+    what: "Run several backends in one Slack workspace and let them delegate tasks to each other"
+quickstart:
+  primaryLabel: "Run with Docker"
+  primaryCode: "docker pull agigante80/agentgate:latest"
+  altLabel: "From source"
+  altCode: "cp .env.example .env && docker compose up -d"
+  docsHref: "https://github.com/agigante80/AgentGate"
 ---
 
-## What is AgentGate?
+## The problem
 
-AgentGate is a Python orchestration service that bridges messaging platforms (Telegram, Slack) with AI coding agents running on remote machines. It lets you monitor, approve, and redirect AI agent work from your phone  - solving the problem of agents hitting decision points or errors when you're away from your desk. It supports multiple concurrent agent sessions, approval workflows, real-time output streaming, and command routing.
+AI coding CLIs are good company at a desk and useless the moment you leave one. The tools run in a terminal session tied to a machine. Step away and you lose the thread: an agent finishes a task and waits, hits an auth error, or needs a decision, and there is nobody to answer.
 
-## The Problem
+I wanted to keep moving work forward from a phone. Not a toy chat wrapper, but the actual Claude, Copilot, Codex, or Gemini CLI running against a real repository, reachable from Telegram or Slack. The constraint that shaped everything else: I run several projects at once, each with its own GitHub token and its own AI backend, and none of them should ever see another project's secrets.
 
-AI coding agents run in terminal sessions on remote machines. When you step away, you lose visibility into what they're doing. An agent might hit a permission error, make a questionable architectural decision, or need approval to proceed with a destructive operation  - and without you there, it either blocks indefinitely or makes the wrong call. I needed a way to stay in the loop from any device.
+## What this does that the others do not
 
-## How I Built It
+### Forwards everything to the AI, including slash commands
 
-The core architectural decision was treating AgentGate as a gateway, not a wrapper. Rather than embedding agent logic, it intercepts the stdin/stdout streams of any CLI-based AI agent and routes them through messaging platform APIs. This means it works with Claude Code, Aider, or any future agent that uses a terminal interface  - no vendor lock-in.
+Most chat bots invent their own command vocabulary. AgentGate does the opposite. Every message you send, `/init`, `/plan add OAuth login`, or plain English, is passed straight through to the underlying CLI. You keep using the native commands you already know. AgentGate's own utility commands live behind a configurable prefix (`gate` by default) so they never collide with the AI's commands.
 
-The trickiest part was handling bidirectional real-time communication without overwhelming the messaging platform rate limits. Telegram and Slack both throttle message sends, so I implemented an output buffering system that batches rapid agent output into readable chunks while keeping interactive prompts (approval requests, error messages) immediate and unbatched.
+### One container per project, nothing shared
 
-Multi-agent support required session isolation  - each agent runs in its own subprocess with independent I/O routing. A session manager maps Telegram/Slack threads to agent sessions, so you can run three different agents on three different repos and keep the conversations separate.
+Each project is its own Docker Compose stack with its own `.env`. A bot clones exactly one repo, holds one fine-grained GitHub token scoped to that repo, and talks to one chat. Running five projects means five containers side by side, fully isolated. A leaked token or a confused agent cannot reach beyond its own workspace.
+
+### Pluggable AI backends
+
+The backend is a config value, not a rewrite. `AI_CLI` selects Copilot, Codex, Claude, or Gemini, with a direct-API path for OpenAI, Anthropic, and Ollama. The CLI-based backends are field-tested; the direct-API path is implemented and unit-tested but not yet validated end to end, and the README says so plainly rather than overselling it.
+
+### Multi-agent orchestration on Slack
+
+Run several containers in one Slack workspace, each with a different backend and a unique prefix (`dev`, `sec`, `docs`). Agents delegate sub-tasks to each other through a `[DELEGATE]` protocol: a single `docs` command can trigger a documentation agent that hands code work to a Codex agent and a security review to a Copilot agent, with no human routing in between.
 
 ## Architecture
 
-The service runs as a persistent daemon that spawns agent subprocesses on demand. A message router dispatches incoming Telegram/Slack messages to the correct agent session based on thread ID. Outbound agent output flows through a formatter that strips ANSI escape codes and converts terminal output into readable markdown for the messaging platform.
+AgentGate runs as a persistent process inside a non-root Docker container. On startup it validates the environment and fails fast with a clear message, clones the target repo into `/repo`, auto-installs dependencies based on what it finds (`package.json`, `pyproject.toml`, or `go.mod`), opens a SQLite store for conversation history, starts the chosen AI backend, and posts a Ready message to the chat. From then on, incoming messages are forwarded to the backend as a subprocess, output is streamed back with throttled message edits, and per-chat history is injected as context for stateless backends.
 
-## Impact
+```
+  Telegram / Slack
+        |
+        v
+  +-----------------+
+  |   AgentGate     |   one container per project
+  |  - platform I/O |
+  |  - cmd router   |---> gate utility commands (run, sync, git, cancel)
+  |  - history (DB) |
+  +-----------------+
+        |
+        v
+  AI backend subprocess  (copilot | codex | claude | gemini | api)
+        |
+        v
+     /repo  (cloned GitHub repository)
+```
 
-- Remote AI agent control from any device  - approve, redirect, or kill agent tasks from your phone
-- Multi-agent orchestration with isolated sessions and independent I/O routing
-- Platform-agnostic design: works with any CLI-based AI agent, not just one vendor
+On Slack, several of these containers share a workspace. Each listens for its own prefix, and trusted agent bot IDs let one container's output reach another, which is what makes agent-to-agent delegation work.
+
+## Decisions worth knowing about
+
+### Treating the AI CLI as a subprocess, not a library
+
+I chose to shell out to each official CLI rather than import vendor SDKs. The tradeoff is real: subprocess management, stream parsing, and timeout handling are all on me. The payoff is that AgentGate inherits whatever the official CLI already does well, authentication, tool permissions, model selection, and stays useful as those CLIs evolve. Claude CLI even supports OAuth credentials from a Pro or Max subscription, so users can skip pay-per-use API keys entirely.
+
+### Pass-through commands over a custom vocabulary
+
+Forwarding `/init` and `/plan` verbatim to the AI means AgentGate cannot pretend Slack does not exist. Slack intercepts any message starting with `/` as a native slash command, so users must prefix a space to send one through. That is an awkward edge I accepted on purpose: a leaky abstraction that keeps the native CLI experience intact beats a clean abstraction that forces people to relearn commands.
+
+### Safe by default for destructive actions
+
+The bot only answers a configured chat ID, with optional per-user allowlists on top. Shell commands run through `gate run` reject shell metacharacters outright, and an optional read-only mode or allowlist narrows them further. Destructive operations (`push`, `merge`, `rm`, `force`) require inline confirmation, and secrets are redacted from outgoing messages and commit text unless explicitly allowed. The default posture is cautious, and loosening it is a deliberate opt-in.
