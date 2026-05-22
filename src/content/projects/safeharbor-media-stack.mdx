@@ -1,54 +1,69 @@
 ---
 title: "SafeHarbor Media Stack"
-description: "Self-hosted media stack on Synology NAS with Docker Compose. Complete media server infrastructure with automated downloads, organization, and streaming."
+tagline: "A VPN-protected media automation stack tested on Synology NAS"
+description: "A Docker Compose media automation stack with VPN protection, Telegram alerts, and DNS leak detection, tested on Synology NAS."
 category: "Utilities"
 tier: 2
 status: "maintained"
-techStack: ["Docker Compose", "Synology NAS", "Self-Hosted"]
+techStack: ["Docker Compose", "Gluetun", "Servarr", "qBittorrent", "Synology DSM"]
 githubUrl: "https://github.com/agigante80/SafeHarbor-Media-Stack"
-metrics: "Full media stack | Self-hosted | Docker Compose"
-lastSyncedFrom: "2026-05-20T12:52:25Z"
+quickstart:
+  primaryLabel: "Start the stack"
+  primaryCode: "cp .env.example .env && docker compose up -d"
+  altLabel: "Check container status"
+  altCode: "docker compose ps"
+  docsHref: "https://github.com/agigante80/SafeHarbor-Media-Stack#-quick-start"
+links:
+  docs: "https://github.com/agigante80/SafeHarbor-Media-Stack#readme"
+stats:
+  - value: "9"
+    unit: "containers"
+    label: "core services"
+    sub: "VPN gateway plus 8 media tools"
+  - value: "20"
+    unit: "+"
+    label: "VPN providers supported"
+    sub: "via Gluetun, OpenVPN and Wireguard"
+comparison:
+  snapshotDate: "2026-02-28"
+  competitors: ["navilg/media-stack", "ultimate-plex-stack"]
+  rows:
+    - label: "Synology tested"
+      cells: ["DS220+, DSM 7.x", "Generic Docker", "Generic Docker"]
+    - label: "Gluetun version pinned"
+      cells: ["v3.40.4", "Latest, may break", "Latest, may break"]
+    - label: "VPN monitoring and alerts"
+      cells: ["VPN Sentinel plus Telegram", "None", "None"]
+    - label: "DNS leak detection"
+      cells: ["Automated", "Manual", "Manual"]
+    - label: "Bundled media server"
+      cells: ["Agnostic, bring your own", "Plex", "Plex plus Tautulli"]
+  caption: "Drawn from the README comparison table. This stack trades a bundled media server for VPN safety and documented Synology compatibility."
+lastSyncedFrom: "2026-05-22T00:00:00Z"
 ---
 
-## What is SafeHarbor Media Stack?
+## The problem
 
-A Docker Compose configuration that integrates Gluetun (VPN gateway), the Servarr media automation suite (Sonarr, Radarr, Bazarr, Prowlarr, Readarr), qBittorrent, and `VPNSentinel` monitoring, **specifically tested and pinned for Synology DSM 7.x**. The stack is deliberately media-server-agnostic: it acquires and organises content, you bring your own Plex, Jellyfin, or Emby.
+Running a self-hosted media automation stack on a Synology NAS has two failure modes that stay invisible until they hurt you.
 
-## The Problem
+The first is silent VPN exposure. If the VPN tunnel drops, the download client and indexer apps keep running. They simply route through the host network instead, with no warning. By the time you notice, you have been exposed for hours.
 
-Self-hosted media stacks on Synology hit two failure modes that are not visible until they bite.
+The second is undocumented breakage between tool versions. Gluetun v3.41.0 introduced a netfilter change that Synology DSM does not handle without specific kernel parameters. Without them the container enters a restart loop and prints `netfilter query: netlink receive: invalid argument`, an error that tells you almost nothing. The fix exists, but it is scattered across issue threads.
 
-- **No tunnel monitoring.** If Gluetun drops the VPN, traffic does not automatically fail. Containers continue running and may leak through the host network with no notification. By the time you notice, you have been exposed for hours.
-- **Silent breaking changes between Gluetun versions.** v3.41.0 introduced a netfilter change that requires specific sysctls to work on Synology DSM. Without them, Gluetun enters a restart loop with cryptic errors (`netfilter query: netlink receive: invalid argument`). The fix exists but is not documented in any obvious place.
+I wanted a stack that closed both gaps by default, not one that assumed the happy path.
 
-The stack pre-empts both.
+## How I built it
 
-## How I Built It
+SafeHarbor is a Docker Compose configuration that wires together existing open-source tools: Gluetun as the VPN gateway, the Servarr suite (Sonarr, Radarr, Readarr, Bazarr, Prowlarr) plus Jackett and FlareSolverr for acquisition, and qBittorrent as the download client.
 
-Three components stand together:
+Every service that touches the internet uses `network_mode: service:gluetun`. That single decision means all download and indexer traffic routes through the VPN as a property of the network namespace, not as a setting someone can forget to enable. Gluetun's kill switch handles the rest: if the tunnel goes down, the traffic stops rather than leaking.
 
-- **Gluetun pinned to v3.40.4.** This is the last version that works out-of-box on Synology without sysctl tweaks. Newer versions are documented in the README with the exact sysctls needed if you want to upgrade.
-- **VPNSentinel** runs inside the tunnel and monitors connection state, DNS leak detection, geolocation, and uptime. It pushes Telegram alerts the moment the tunnel drops or DNS starts leaking. A second VPNSentinel server runs outside the tunnel as an interactive Telegram bot for on-demand status checks (`/status`, `/ping`).
-- **Standard tunnelled networking.** Every protected service uses `network_mode: service:gluetun` so all download and indexer traffic routes through the VPN by definition. No leak path.
+For the version problem I pinned Gluetun to v3.40.4, the last release that works out of the box on Synology DSM 7.x. The README documents exactly which sysctls to add if you want to move to v3.41.0 or later, so the upgrade path is a deliberate choice rather than a surprise.
 
-Pre-configured for Synology DSM 7.x path conventions (`/volume1/`), PUID/PGID handling, and DS220+ as the tested hardware baseline.
+I made the stack deliberately media-server agnostic. It acquires and organizes content; you point your own Plex, Jellyfin, or Emby at the finished library. That keeps the configuration small and avoids forcing a media server choice on anyone.
 
 ## Architecture
 
-```
-Host network
-└── Gluetun VPN gateway
-    ├── qBittorrent, Sonarr, Radarr, Bazarr, Prowlarr,
-    │   Readarr, Jackett, FlareSolverr (all share Gluetun's namespace)
-    └── VPNSentinel client (monitors from inside the tunnel)
-                │
-                └── alerts to external VPNSentinel server + Telegram bot
-```
+Monitoring is the part most stacks skip. SafeHarbor integrates [VPN Sentinel](https://github.com/agigante80/VPNSentinel), a project of mine, in a client-server split. The client runs inside the Gluetun tunnel and continuously reports its external IP, geolocation, and DNS resolver. The server runs outside the tunnel with a real IP and compares those reports. When the VPN drops or the DNS country stops matching the VPN country, it pushes a Telegram alert immediately. The same server doubles as an interactive bot, so a `/status` command returns the current IP, location, and uptime on demand.
 
-Comparison against other popular media stacks in the README makes the trade-offs explicit: this stack chooses VPN safety and Synology compatibility over a polished UI dashboard, and stays opinion-free on which media server you point at it.
-
-## Impact
-
-- A documented, working Synology DS220+ stack with version pinning that survives Gluetun upgrades.
-- DNS leak detection and Telegram alerts via VPNSentinel, integrated by default.
-- Media-server-agnostic by design: every other comparable stack assumes Plex; this one does not.
+The result is a stack where the safety mechanism is structural (traffic cannot leave except through the VPN) and the monitoring is active (you find out within seconds when something is wrong), all on hardware as modest as a Synology DS220+.
