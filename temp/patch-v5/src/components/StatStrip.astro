@@ -1,0 +1,123 @@
+---
+/**
+ * StatStrip: at-a-glance numeric proof points for a project detail page.
+ *
+ * Renders 2 to 5 cards in a horizontal strip with a left-bordered accent.
+ * Whoever calls it is responsible for merging live stats and frontmatter
+ * before passing `cards`; this component only renders.
+ */
+interface Card {
+  value: string;
+  unit?: string;
+  label: string;
+  sub?: string;
+}
+interface Props {
+  cards: Card[];
+  syncedAt?: string;       // ISO date; renders a small "synced N ago" badge
+}
+const { cards, syncedAt } = Astro.props;
+if (cards.length === 0) return null;
+
+const cols = Math.min(cards.length, 4);
+
+function timeAgo(iso?: string) {
+  if (!iso) return null;
+  const ms = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(ms / 60000);
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const d = Math.floor(h / 24);
+  return `${d}d ago`;
+}
+const synced = timeAgo(syncedAt);
+---
+
+<section class="stat-strip">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid" style={`--cols: ${cols}`}>
+      {cards.map(c => (
+        <div class="stat-card">
+          <div class="num">
+            {c.value}
+            {c.unit && <span class="unit">{c.unit}</span>}
+          </div>
+          <div class="lbl">{c.label}</div>
+          {c.sub && <div class="sub">{c.sub}</div>}
+        </div>
+      ))}
+    </div>
+    {synced && (
+      <div class="synced" aria-label={`Stats refreshed ${synced}`}>
+        <span class="dot"></span>
+        Synced {synced}
+      </div>
+    )}
+  </div>
+</section>
+
+<style>
+  .stat-strip {
+    padding: 28px 0;
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-surface);
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(var(--cols, 4), minmax(0, 1fr));
+    gap: 32px;
+  }
+  .stat-card {
+    border-left: 2px solid var(--color-accent);
+    padding-left: 16px;
+    min-width: 0;
+  }
+  .stat-card .num {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: clamp(24px, 3vw, 32px);
+    color: var(--color-text);
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .stat-card .num .unit {
+    font-size: 0.5em;
+    color: var(--color-text-muted);
+    margin-left: 4px;
+    font-weight: 500;
+  }
+  .stat-card .lbl {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-top: 8px;
+  }
+  .stat-card .sub {
+    font-size: 12px;
+    color: var(--color-text-muted);
+    margin-top: 2px;
+  }
+  .synced {
+    margin-top: 14px;
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    color: var(--color-text-muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .synced .dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #4ade80;
+  }
+  @media (max-width: 720px) {
+    .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+  }
+</style>

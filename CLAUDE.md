@@ -88,7 +88,7 @@ To add a project, run `/add-project <github-url>`. The skill fetches repo metada
 
 `src/layouts/Base.astro` is the single layout that handles SEO meta, OG tags, nav, footer, cookie consent, JSON-LD schema injection, and view transitions (`ClientRouter`). Props: `title` (required), `description`, `ogImage`, `ogType` (defaults to `"website"`), `schema` (pass structured data objects to inject `<script type="application/ld+json">`).
 
-**Dark mode is default.** Light mode activates by adding `html.light` class. Theme toggle persists to `localStorage`. An inline `<script>` in `<head>` prevents FOUC by reading the preference before paint. A second `data-astro-rerun` script handles toggle button behavior and survives Astro view transitions.
+**Single dark theme.** The site has one theme: warm ink background, parchment text, teal accent. Tokens are defined once on `:root` in `global.css`. There is no light mode, no theme toggle, no `html.light` class. (A light/dark toggle existed through redesign v4 and was removed in v5 for simplicity.)
 
 ### Styling
 
