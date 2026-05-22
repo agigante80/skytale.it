@@ -271,7 +271,7 @@ Print to the user:
 - **Run on a schedule.** Manual invocation only.
 - **Generate prose for new auto-added Tier 3 projects.** New projects get frontmatter only.
 - **Count downloads from unverified packages.** A package name on npm or PyPI matching your repo slug is not enough; the source URL must match `agigante80/<name>` too.
-- **Embed shields.io badges, license badges, CI badges, or any badge wall.** Same opinionation as `/add-project`.
+- **Embed shields.io badges, license badges, CI badges, or any badge wall.** Same opinionation as `/manage-project`.
 
 ## Recovery
 
