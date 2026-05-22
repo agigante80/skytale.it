@@ -28,5 +28,8 @@
     "astro": "^6.1.3",
     "rss-parser": "^3.13.0",
     "tailwindcss": "^4.2.2"
+  },
+  "devDependencies": {
+    "gray-matter": "^4.0.3"
   }
 }

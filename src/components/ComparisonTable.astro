@@ -1,0 +1,157 @@
+---
+/**
+ * ComparisonTable: section 08 of the project template.
+ *
+ * Side-by-side feature comparison with alternatives. The first data
+ * column is always "this project"; competitor headers come from props.
+ *
+ * Cell strings starting with the characters `✓`, `✗`, `~`, or `N/A` get
+ * coloured automatically; everything else renders plain.
+ */
+interface Row {
+  group?: string;            // when set, renders a group-separator row
+  label: string;
+  cells: string[];           // length = 1 + competitors.length
+}
+interface Props {
+  thisProjectLabel: string;  // usually short form, e.g. "actual-mcp-server"
+  competitors: string[];     // header labels for the other columns
+  rows: Row[];
+  snapshotDate?: string;
+  caption?: string;
+}
+const { thisProjectLabel, competitors, rows, snapshotDate, caption } = Astro.props;
+
+function cellClass(s: string) {
+  if (s.startsWith('✓')) return 'y';
+  if (s.startsWith('✗')) return 'n';
+  if (s.startsWith('~')) return 'p';
+  if (s.startsWith('N/A')) return 'na';
+  return '';
+}
+---
+
+<section class="compare-block">
+  <div class="eb">
+    <span class="dash"></span>
+    <span>Comparison</span>
+  </div>
+  <h2>How it stacks against alternatives</h2>
+  {snapshotDate && (
+    <p class="snapshot">Snapshot: {snapshotDate}. Versions and feature flags reflect each project at that date.</p>
+  )}
+
+  <div class="wrap">
+    <table>
+      <thead>
+        <tr>
+          <th class="feat">Feature</th>
+          <th class="mine">{thisProjectLabel}</th>
+          {competitors.map(c => <th>{c}</th>)}
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map(row => row.group ? (
+          <tr class="group"><td colspan={1 + 1 + competitors.length}>{row.group}</td></tr>
+        ) : (
+          <tr>
+            <td class="feat-cell">{row.label}</td>
+            {row.cells.map((cell, i) => (
+              <td class:list={[cellClass(cell), i === 0 && 'mine-cell']}>{cell}</td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+  {caption && <p class="caption" set:html={caption} />}
+</section>
+
+<style>
+  .compare-block { margin-bottom: 48px; }
+  .eb {
+    display: flex; align-items: center; gap: 12px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    margin-bottom: 8px;
+  }
+  .eb .dash {
+    height: 1px; width: 22px;
+    background: var(--color-accent);
+    display: inline-block;
+  }
+  h2 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 24px;
+    margin: 0 0 8px;
+    letter-spacing: -0.01em;
+  }
+  .snapshot {
+    margin: 0 0 18px;
+    font-size: 13px;
+    color: var(--color-text-muted);
+  }
+  .wrap {
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    overflow: hidden;
+    background: var(--color-surface);
+    overflow-x: auto;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+    vertical-align: top;
+    color: var(--color-text-muted);
+  }
+  thead {
+    background: var(--color-surface-2);
+  }
+  thead th {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    border-bottom: 1px solid var(--color-border);
+    font-weight: 500;
+  }
+  thead th.mine { color: var(--color-accent); }
+  td.feat-cell {
+    color: var(--color-text);
+    font-weight: 500;
+    min-width: 180px;
+  }
+  td.mine-cell { background: color-mix(in oklab, var(--color-accent) 5%, transparent); color: var(--color-text); }
+  td.y { color: #4ade80; }
+  td.n { color: color-mix(in oklab, var(--color-accent) 0%, #c97362); }
+  td.p { color: #facc15; }
+  td.na { color: var(--color-text-muted); font-style: italic; }
+  tr.group td {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    background: var(--color-surface-2);
+    border-top: 1px solid var(--color-border);
+    padding: 8px 12px;
+  }
+  .caption {
+    margin: 14px 0 0;
+    font-size: 13px;
+    color: var(--color-text-muted);
+    line-height: 1.6;
+  }
+  .caption :global(strong) {
+    color: var(--color-text);
+    font-weight: 500;
+  }
+</style>
