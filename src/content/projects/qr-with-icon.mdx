@@ -1,12 +1,29 @@
 ---
 title: "QR with Icon"
-description: "QR code generator with custom icon overlay. Creates branded QR codes with embedded logos while maintaining scannability."
+description: "A Python command-line tool that generates branded QR codes with custom icons, dot styles, and a built-in scannability check."
 category: "Utilities"
 tier: 3
 status: "maintained"
-techStack: ["Python", "Pillow"]
+techStack: ["Python", "qrcode", "Pillow", "SVG", "PDF"]
 githubUrl: "https://github.com/agigante80/qr-with-icon"
-lastSyncedFrom: "2026-05-20T12:52:25Z"
+lastSyncedFrom: "2026-05-22T00:00:00Z"
+tagline: "One command turns any text into a branded, scannable QR code."
+links:
+  docs: "https://github.com/agigante80/qr-with-icon#readme"
+quickstart:
+  primaryLabel: "Install and generate"
+  primaryCode: "pip install -r requirements.txt\npython qr_with_icon.py -d \"Hello World\" -o hello_qr.png"
+  altLabel: "WiFi QR with icon"
+  altCode: "python qr_with_icon.py -d \"WIFI:S:MySSID;T:WPA;P:mypassword;;\" -o wifi_qr.png -i wifi_icons/wifi-signal.png -ib white"
+  docsHref: "https://github.com/agigante80/qr-with-icon#readme"
 ---
 
-A Python tool that generates QR codes with a custom icon or logo embedded in the center. Uses the Pillow image processing library to composite the icon onto the QR code while preserving enough error correction data to keep the code scannable. Configurable icon size, padding, and QR error correction level let you balance branding prominence against scan reliability. One command produces a branded, print-ready QR code.
+## The problem
+
+I needed a WiFi QR code for my home and did not want to paste my network password into an online QR generator. So I wrote a small Python script that runs entirely on my machine. After I shared the result, a few friends asked for the script, so I cleaned it up and made it usable by anyone.
+
+## How I built it
+
+The tool is a single command-line script. You pass the data to encode and an output file name, and it writes a QR code as PNG, SVG, or PDF based on the extension. Flags let you overlay a custom icon (with an optional white or black background plate so the icon stays readable), switch between square and circle dot styles, and tune the QR version (1 to 40) and box size.
+
+Embedding an icon eats into a QR code's error correction budget, so the script includes a robustness check that is enabled by default. It verifies that the generated code still decodes after the icon is composited on top, which catches cases where the branding would have broken the scan.
