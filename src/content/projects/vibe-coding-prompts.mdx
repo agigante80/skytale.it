@@ -1,12 +1,39 @@
 ---
 title: "Vibe Coding Prompts"
-description: "Curated collection of AI meta-prompts for developer workflows. Battle-tested prompts for code review, architecture decisions, debugging, and more."
+description: "A curated library of AI meta-prompts that turn vague intent into production-ready documentation, tests, CI/CD, and security audits."
 category: "AI/MCP"
 tier: 2
 status: "maintained"
-techStack: ["Prompt Engineering", "AI"]
+techStack: ["Prompt Engineering", "Meta-Prompts", "GitHub Actions", "CI/CD", "DevOps"]
 githubUrl: "https://github.com/agigante80/vibe-coding-prompts"
-lastSyncedFrom: "2026-05-20T12:52:25Z"
+tagline: "Meta-prompts for vibe coding: describe intent, get production-ready output."
+lastSyncedFrom: "2026-05-22T00:00:00Z"
+stats:
+  - value: "10"
+    label: "Meta-prompts"
+    sub: "Battle-tested on real projects"
+  - value: "6"
+    label: "Workflow categories"
+    sub: "Docs, DevOps, security, testing, ops, management"
+  - value: "4"
+    label: "AI platforms"
+    sub: "ChatGPT, Claude, Gemini, Copilot"
 ---
 
-A curated collection of AI meta-prompts for software development workflows  - covering code review, architecture decisions, debugging, documentation, and refactoring. Each prompt is battle-tested across real projects and structured to produce consistent, actionable results from AI coding assistants. The collection is organized by workflow stage so developers can quickly find the right prompt for their current task.
+## The problem
+
+AI coding assistants are great at writing code and bad at doing the boring, repeatable engineering work around it. Every project still needs the same things: a real README, a CI/CD pipeline, a test suite, a security audit, structured logging. Ask an assistant for any of these from scratch and you get an answer shaped by how carefully you phrased the request that day. The output drifts every time.
+
+I kept rewriting the same long prompts across my own repositories. The fix was to stop writing one-off prompts and start writing prompt frameworks I could reuse, version, and improve like code.
+
+## How I built it
+
+The repository is a collection of meta-prompts. A meta-prompt does not solve one specific problem. It defines how to solve a whole category of problems. The CI/CD generator does not produce a single hardcoded pipeline. It detects the project's tech stack and generates the pipeline that fits. The same idea applies to documentation, testing, refactoring, and security.
+
+Each prompt follows the same design rules. It has to be generic enough to apply across languages and stacks, but specific enough to produce actionable output rather than vague advice. It covers a complete workflow rather than an isolated task, so the test prompt also wires up fixtures, mocking, and CI integration. And it has to be safe to run more than once, because real projects evolve and the prompt needs to improve the result instead of fighting it.
+
+I organized everything by workflow stage: documentation, DevOps automation, project management, development workflow, operations, and security. That structure lets me grab the right prompt for whatever I am doing without rereading the catalog.
+
+The harder decisions were about scope and length. Prompts that try to do too much produce shallow output, so each one targets a single category and goes deep. Length matters too, because platforms behave differently. The longer comprehensive prompts run well on ChatGPT, Claude, and Gemini, while Copilot needs shorter, focused versions through Copilot Chat. The repository documents those length guidelines so contributors do not have to relearn them.
+
+The name comes from the working style behind it. Vibe coding means describing intent in natural language ("add solid test coverage that catches the important stuff") and iterating until the result feels right, rather than writing rigid specifications up front. These prompts are the scaffolding that keeps that loose, conversational process from producing inconsistent results.
