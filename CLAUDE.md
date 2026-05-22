@@ -7,6 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **NEVER use em dashes (--) or en dashes (-) in any content, copy, descriptions, titles, TL;DRs, commit messages, or code comments.** This is a hard rule with no exceptions.
 - Use a hyphen (-) to connect compound words or modifiers (e.g. "AI-assisted", "well-known").
 - Rewrite sentences to avoid constructions that would normally call for an em or en dash. Use a period, a comma, parentheses, a colon, or restructure the sentence instead.
+- Enforced by a `PreToolUse` hook (`.claude/hooks/no-dash-check.sh`, wired in `.claude/settings.json`): any Write or Edit whose content contains an em or en dash is blocked. Incoming patch files are not scrubbed by the hook; the `/review-patch` skill scans those.
 
 ## Project Overview
 
@@ -144,6 +145,7 @@ Biographical info, the site's marketing purpose, and the source-of-truth list of
 - **add-article skill**: `/add-article <linkedin-url>` fetches metadata, downloads the cover image, and appends to `src/lib/articles.ts`.
 - **add-project skill**: `/add-project <github-url>` scaffolds a project MDX with the standard case-study structure, optionally downloads a hero image, suggests related articles. Bodies it scaffolds carry a soft-regen marker (`{/* auto-generated body, edit to take ownership */}`); remove the marker once you edit the body to claim ownership.
 - **sync-projects skill**: `/sync-projects` reconciles the portfolio against `github.com/agigante80`. Auto-adds new public repos at Tier 3, refreshes existing projects whose GH `pushed_at` is newer than the MDX `lastSyncedFrom`, marks newly-archived projects, surfaces tier-vs-popularity mismatches. One commit per sync; revert with `git revert HEAD` if undesired. Hand-edited bodies (no marker) are never touched. Projects without `lastSyncedFrom` are treated as never-synced and get refreshed on next run.
+- **review-patch skill**: `/review-patch [zip]` reviews an incoming patch zip (defaults to the newest in `temp/`) before it is applied. Extracts it, audits every file for compatibility, scans for forbidden dashes, reports findings and an apply recommendation. Does not apply or commit anything.
 - **Lovart AI** (lovart.ai): External branding tool. Andrea generates images externally; provide prompts when needed.
 
 ## Content Guardrails
