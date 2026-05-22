@@ -1,13 +1,134 @@
 ---
 title: "Actual-sync"
-description: "Automated bank synchronization for Actual Budget. Connects to real bank APIs, reconciles transactions, and keeps your budget data fresh  - all running unattended in Docker."
+description: "Automated bank sync for Actual Budget. Scheduled syncs, multi-server management, health monitoring, and alerts, all running unattended in Docker."
 category: "Finance"
 tier: 1
 status: "active"
-techStack: ["Node.js", "Docker", "Banking APIs"]
+techStack: ["Node.js", "Docker", "SQLite", "Prometheus", "GoCardless API", "Telegram Bot API"]
 githubUrl: "https://github.com/agigante80/Actual-sync"
-metrics: "309 tests | Automated sync | Docker"
-lastSyncedFrom: "2026-05-20T12:52:25Z"
+lastSyncedFrom: "2026-05-22T00:00:00Z"
+
+tagline: "Keep every budget current without ever touching the sync button."
+
+version: "1.0.0"
+
+links:
+  dockerHub: "https://hub.docker.com/r/agigante80/actual-sync"
+  docs: "https://github.com/agigante80/Actual-sync#readme"
+
+stats:
+  - value: "309"
+    unit: "tests"
+    label: "Passing test suite"
+    sub: "84.77% coverage"
+  - value: "229"
+    unit: "MB"
+    label: "Alpine-based image"
+    sub: "amd64 and arm64"
+  - value: "4"
+    unit: "channels"
+    label: "Failure alerting"
+    sub: "Telegram, email, Slack, Discord"
+  - value: "0"
+    unit: "critical"
+    label: "Security audit findings"
+    sub: "Score 86 of 100"
+
+audience:
+  - who: "Self-hosted Actual Budget users"
+    what: "Run a single instance and want bank transactions pulled on a schedule instead of by hand."
+  - who: "Multi-budget households"
+    what: "Manage several budget servers from one service, each with its own schedule and encryption key."
+  - who: "Home-lab operators"
+    what: "Already run Prometheus and Grafana and want sync health on the same dashboards as everything else."
+
+quickstart:
+  primaryLabel: "Docker"
+  primaryCode: |
+    # Pull and run, then drop a config.json into the mounted directory.
+    docker run -d --name actual-sync \
+      --restart unless-stopped \
+      -v ./config:/app/config:ro \
+      -v ./data:/app/data \
+      -v ./logs:/app/logs \
+      -p 3000:3000 \
+      -e TZ=America/New_York \
+      agigante80/actual-sync:latest
+  altLabel: "npm"
+  altCode: |
+    git clone https://github.com/agigante80/Actual-sync.git
+    cd Actual-sync && npm install
+    cp config/config.example.json config/config.json
+    npm run list-accounts   # verify connectivity
+    npm start               # start the scheduled service
+  docsHref: "https://github.com/agigante80/Actual-sync#readme"
 ---
 
-Automated bank synchronization service for Actual Budget that connects to real bank APIs, pulls new transactions on a schedule, and reconciles them against existing entries to avoid duplicates. Built with Node.js and packaged in Docker for unattended operation. The project includes 309 tests covering transaction matching, duplicate detection, and edge cases like mid-day bank corrections and timezone mismatches  - ensuring reliability for something that touches real financial data.
+## The problem
+
+Actual Budget is excellent open-source budgeting software, but the bank sync is a manual button. You open the app, you click sync, you wait. If you forget for a week, your categories drift out of date and reconciliation turns into archaeology. Run more than one budget file, for a household or a side business, and the chore multiplies.
+
+There is also a quieter failure mode. Actual Budget ships database migrations with most releases. If the API client you sync with falls behind the server version, syncs break with an `out-of-sync-migrations` error and no budget file opens at all. A naive cron job that runs `sync` and walks away will silently stop working and you find out weeks later.
+
+I wanted bank data that stays current on its own, across every budget I run, and that tells me loudly when something is wrong instead of failing quietly.
+
+## What this does that a cron job does not
+
+### Manages many servers from one service
+
+Each Actual Budget instance is configured independently: its own URL, credentials, sync ID, data directory, and optional end-to-end encryption password. Schedules can be global or overridden per server. One container handles a personal budget, a family budget, and a business budget without three separate deployments.
+
+### Treats failure as a first-class state
+
+Bank APIs rate-limit, time out, and return errors. Actual-sync retries with exponential backoff and jitter, detects rate-limit responses specifically, and tracks consecutive failures per server. When a threshold is crossed it sends a notification through Telegram, email, Slack, or Discord, with rate limiting so a bad night does not flood you with messages.
+
+### Records every sync, so you can answer questions later
+
+Every run is written to a local SQLite history database: which server, when, how long, success or partial or failure, and the errors. A CLI tool (`npm run history`) queries it by server, date range, or status. The same data feeds a web dashboard and Prometheus, so "why did Tuesday fail" is a lookup, not a guess.
+
+### Exposes itself to the monitoring you already run
+
+HTTP endpoints cover `/health`, `/ready`, and `/metrics`, plus a Prometheus scrape endpoint. The readiness probe makes it behave well under Kubernetes. If you already have Grafana, sync health lands on the same panels as the rest of your home lab instead of living in a separate silo.
+
+## Architecture
+
+Actual-sync is a single long-running Node.js process. A scheduler fires cron-defined jobs, the sync engine drives the official `@actual-app/api` client against each configured server, and results flow into three sinks at once: the SQLite history database, the structured logger, and the metrics registry. An HTTP server runs alongside the scheduler to serve health endpoints, the Prometheus feed, and a dashboard that streams live logs to the browser over WebSocket. The Telegram bot is an optional fourth surface that can both report status and trigger an on-demand sync.
+
+```
+                  +------------------+
+   config.json -->|    Scheduler     |--- cron triggers
+                  +--------+---------+
+                           |
+                           v
+                  +------------------+      +-------------------+
+   manual run --->|   Sync engine    |----->| @actual-app/api   |--> bank
+   (CLI/Telegram) | retry + backoff  |      | per-server client |    servers
+                  +--------+---------+      +-------------------+
+                           |
+        +------------------+------------------+
+        v                  v                  v
+  +-----------+     +--------------+    +--------------+
+  |  SQLite   |     |  Structured  |    |  Prometheus  |
+  |  history  |     |    logger    |    |   registry   |
+  +-----+-----+     +--------------+    +------+-------+
+        |                                     |
+        v                                     v
+  +-------------------------------------------------+
+  |  HTTP server: /health /ready /metrics dashboard |
+  |  WebSocket live log stream  +  Telegram bot     |
+  +-------------------------------------------------+
+```
+
+## Decisions worth knowing about
+
+### Pull dependency updates on a schedule, do not chase them
+
+The `out-of-sync-migrations` failure is the single most likely way this service breaks, and the cause is always the same: the `@actual-app/api` version drifting behind the server. So a GitHub Actions workflow checks the npm registry daily, opens a pull request when a new version exists, and rebuilds multi-platform Docker images on merge. The tradeoff is a small stream of dependency PRs to review, which I accept because the alternative is a sync that quietly dies after the next Actual Budget release.
+
+### A custom logger instead of a logging library
+
+Structured logging here is hand-written rather than pulled from a framework. The cost is code I have to maintain myself: JSON and pretty formats, correlation IDs, rotation with gzip compression, per-server levels. The benefit is that the dependency tree stays small, the audit surface stays small, and `npm audit` stays clean, which matters for something that holds bank credentials. For a focused service this is a fair trade; for a larger app it would not be.
+
+### Test the matching and failure paths hard, because the data is real
+
+This service touches financial data, so a quiet bug is worse than a loud crash. The suite is 309 tests at 84.77% coverage, weighted toward the parts that are easy to get subtly wrong: retry and backoff behavior, rate-limit detection, partial-failure handling across multiple servers, and configuration validation. High coverage is not the goal in itself. The goal is confidence that a failure surfaces as an alert rather than as a wrong number in someone's budget.
