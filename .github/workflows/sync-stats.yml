@@ -1,0 +1,39 @@
+name: sync-stats
+
+on:
+  schedule:
+    # Daily at 06:00 UTC. Adjust if you want every 3 days instead.
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Fetch fresh stats
+        run: node scripts/sync-stats.mjs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit if changed
+        run: |
+          git config user.name "stats-bot"
+          git config user.email "stats-bot@users.noreply.github.com"
+          git add src/data/stats.json
+          if git diff --quiet --staged; then
+            echo "No stat changes."
+          else
+            git commit -m "chore(stats): refresh"
+            git push
+          fi

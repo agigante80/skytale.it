@@ -1,36 +1,196 @@
 ---
 title: "Actual MCP Server"
-description: "A production-grade MCP server for Actual Budget with 62 tools, enabling AI assistants to manage budgets, transactions, accounts, and financial reports through natural language."
+description: "Production-grade Model Context Protocol server that connects LibreChat, LobeChat, and Claude Desktop directly to your self-hosted Actual Budget. 63 tools, two transports, multi-budget switching at runtime."
 category: "AI/MCP"
 tier: 1
 status: "active"
-techStack: ["TypeScript", "MCP", "Docker", "Node.js"]
+techStack: ["TypeScript", "Node.js", "MCP", "Docker", "Express", "Zod", "Winston"]
 githubUrl: "https://github.com/agigante80/actual-mcp-server"
 featured: true
-metrics: "62 tools | Production-ready | Docker"
-lastSyncedFrom: "2026-05-20T12:52:25Z"
+metrics: "63 tools | 84% API coverage | Production-ready"
+lastSyncedFrom: "2026-05-22T00:00:00Z"
+
+tagline: "Talk to your budget. Run it anywhere. Trust it in production."
+
+version: "0.6.14"
+
+links:
+  npm: "https://www.npmjs.com/package/actual-mcp-server"
+  dockerHub: "https://hub.docker.com/r/agigante80/actual-mcp-server"
+  docs: "https://github.com/agigante80/actual-mcp-server#readme"
+
+stats:
+  - value: "63"
+    unit: "tools"
+    label: "Most comprehensive"
+    sub: "Across 12 categories"
+  - value: "84"
+    unit: "%"
+    label: "Actual Budget API coverage"
+    sub: "Schedules pending"
+  - value: "15"
+    unit: "sessions"
+    label: "Concurrent connection pool"
+    sub: "Per-session isolation"
+  - value: "3"
+    unit: "clients"
+    label: "Verified end-to-end"
+    sub: "LibreChat, LobeChat, Claude"
+
+audience:
+  - who: "Claude Desktop users"
+    what: "Want stdio transport, no Docker, no HTTP server. One <code>npx</code> command and you are done."
+  - who: "LibreChat / LobeChat operators"
+    what: "Need a real HTTP server with auth and connection pooling for multiple chat users."
+  - who: "Multi-budget families and businesses"
+    what: "Switch between Personal, Family, and Business budgets mid-conversation without restarting anything."
+  - who: "Self-hosters with SSO"
+    what: "OIDC support means JWT-validated multi-user access with per-user budget ACLs. No shared tokens."
+
+quickstart:
+  primaryLabel: "Docker"
+  primaryCode: |
+    # Pull and run with your Actual Budget credentials.
+    docker run -d --name actual-mcp-server-backend \
+      -p 3600:3600 \
+      -e ACTUAL_SERVER_URL=http://localhost:5006 \
+      -e ACTUAL_PASSWORD=your_password \
+      -e ACTUAL_BUDGET_SYNC_ID=your_sync_id \
+      -e MCP_SSE_AUTHORIZATION=your_token \
+      -v actual-mcp-data:/data \
+      ghcr.io/agigante80/actual-mcp-server:latest
+
+    # Verify
+    curl http://localhost:3600/health
+  altLabel: "npx (Claude Desktop, stdio)"
+  altCode: |
+    # No Docker, no HTTP server. Drop into claude_desktop_config.json:
+    {
+      "mcpServers": {
+        "actual-budget": {
+          "command": "npx",
+          "args": ["-y", "actual-mcp-server", "--stdio"],
+          "env": {
+            "ACTUAL_SERVER_URL": "http://localhost:5006",
+            "ACTUAL_PASSWORD": "your_password",
+            "ACTUAL_BUDGET_SYNC_ID": "your-sync-id",
+            "MCP_BRIDGE_DATA_DIR": "/absolute/path/to/data-dir"
+          }
+        }
+      }
+    }
+  docsHref: "https://github.com/agigante80/actual-mcp-server#quick-start"
+
+comparison:
+  snapshotDate: "2026-03-20"
+  competitors:
+    - "s-stefanov/actual-mcp"
+    - "henfrydls/actual-budget-mcp"
+    - "WGDev/ynab-mcp"
+  rows:
+    - label: "Version"
+      cells: ["v0.6.14", "v1.11.1", "v0.2.0", "v0.1.0"]
+    - label: "Tool count"
+      cells: ["63", "~22", "18", "9"]
+
+    - group: "Setup and distribution"
+      label: ""
+      cells: []
+    - label: "Transport"
+      cells: ["HTTP + stdio", "stdio + SSE", "stdio", "stdio"]
+    - label: "Docker support"
+      cells: ["✓ Full (image + Compose)", "~ Image only", "✗", "✗"]
+    - label: "Published package"
+      cells: ["✓ npm", "✓ npm", "✓ npm", "✓ pip"]
+
+    - group: "Security and access"
+      label: ""
+      cells: []
+    - label: "Authentication"
+      cells: ["✓ Bearer + OIDC", "~ Optional Bearer", "✗ None", "✓ Keyring"]
+    - label: "Multi-budget switching"
+      cells: ["✓ Runtime via tool", "✗", "✗", "✓ (YNAB native)"]
+
+    - group: "Production and reliability"
+      label: ""
+      cells: []
+    - label: "Connection pooling"
+      cells: ["✓ Up to 15 sessions", "✗", "✗", "✗"]
+    - label: "Retry and backoff"
+      cells: ["✓ 3 attempts, exponential", "✗", "✗", "✗"]
+    - label: "Automated test suite"
+      cells: ["✓ Unit + E2E + integration", "✗", "✗", "✗"]
+
+    - group: "Analysis and reporting"
+      label: ""
+      cells: []
+    - label: "ActualQL custom queries"
+      cells: ["✓ 6 exclusive tools", "✗", "✗", "N/A"]
+    - label: "Bank sync"
+      cells: ["✓ GoCardless / SimpleFIN", "✗", "✓", "N/A"]
+  caption: "When to choose another: <strong>s-stefanov</strong> for built-in read-only mode. <strong>henfrydls</strong> for Spanish UI and natural-language dates. <strong>ynab-mcp</strong> if you are on YNAB instead of Actual."
 ---
 
-## What is Actual MCP Server?
+## The problem
 
-Actual MCP Server is a TypeScript implementation of the Model Context Protocol (MCP) that connects AI assistants  - including Claude Desktop and LibreChat  - to the Actual Budget personal finance application. It exposes 62 discrete tools covering the full Actual Budget API surface: account management, transaction creation, budget category configuration, payee management, automated rules, and financial report generation. Deployed via Docker, it enables users to manage their personal finances through natural-language commands to any MCP-compatible AI assistant.
+Most existing Actual Budget MCP servers were built as **simple stdio bridges for single-user Claude Desktop sessions**. They work fine on a developer laptop. They fall apart the moment you want a remote server for LibreChat or LobeChat, multi-user authentication, multiple budget files, or a real test suite covering more than the happy path.
 
-## The Problem
+Personal finance is an unforgiving domain. A misrouted transaction or a deleted category cascades through months of data. Operators need production tools, not toys.
 
-Personal finance tools like Actual Budget are powerful but require manual interaction through a web UI. Users who rely on AI assistants for daily workflows had no standardized way to bridge the gap  - meaning every budget update, transaction entry, or report request required context-switching out of the AI conversation into the Actual Budget interface.
+## What this does that the others do not
 
-## How I Built It
+### Two transports, one codebase
 
-The main challenge was designing a tool taxonomy that felt intuitive to AI assistants while preserving data integrity. Financial operations are unforgiving  - a misrouted transaction or a deleted category can cascade through months of budget data. I mapped every Actual Budget API endpoint, then grouped them into logical tool families (accounts, transactions, budgets, categories, payees, rules, reports) with consistent naming conventions so an AI model could reason about which tool to use.
+HTTP (`--http`) for remote clients like LibreChat. Stdio (`--stdio`) for local Claude Desktop. Same 63 tools either way. Most alternatives pick one.
 
-Input validation was another key decision. Rather than trusting that the AI would always send well-formed requests, every tool validates its inputs against strict TypeScript schemas before touching the database. This catches malformed dates, negative amounts, and references to non-existent accounts before they cause problems.
+### Six exclusive ActualQL query tools
+
+Search transactions by month, amount, category, or payee. Aggregated summaries instead of dumping raw rows into the AI context window. Token-efficient and unique to this server.
+
+### Runtime multi-budget switching
+
+Configure N budget files. The AI calls `actual_budgets_switch` mid-conversation. Personal becomes Family becomes Business without restarting anything.
+
+### Production reliability primitives
+
+Connection pooling (up to 15 concurrent sessions), exponential-backoff retry, full test suite (unit + E2E + integration). The plumbing nobody talks about until it breaks.
+
+### OIDC multi-user with per-budget ACLs
+
+JWKS-validated JWTs, `AUTH_BUDGET_ACL` for per-user budget scoping. Casdoor-tested. The only Actual MCP with real multi-tenancy.
 
 ## Architecture
 
-The server follows the MCP specification strictly  - exposing a JSON-RPC interface over stdio transport. Each of the 62 tools is a self-contained handler with its own input schema, error handling, and response formatter. Docker packaging ensures the server runs identically across development and production environments, with environment variables controlling the connection to the Actual Budget sync server.
+Each AI client speaks MCP over its preferred transport. The server normalises both into the same internal tool dispatcher, which wraps every Actual Budget API call in a retry-and-pool layer before touching the local SQLite copy.
 
-## Impact
+```
+┌─────────────┐   MCP/HTTP    ┌──────────────────┐   Actual API   ┌──────────────┐
+│  LibreChat  │ ◄────────────► │  Actual MCP      │ ◄────────────► │   Actual     │
+│  LobeChat   │                │  Server          │                │   Budget     │
+│  (remote)   │                │  (63 tools)      │                │   Server     │
+└─────────────┘                └──────────────────┘                └──────────────┘
+                                        ▲
+┌─────────────┐   MCP/stdio             │
+│  Claude     │ ◄──────────────────────►│
+│  Desktop    │                         │
+│  (local)    │                         │
+└─────────────┘                         │
+                                        ▼
+                              retry + pool + ACL + SQLite mirror
+```
 
-- **62 tools** covering the complete Actual Budget API surface  - the most comprehensive MCP server for any personal finance application
-- Production-ready with Docker support and comprehensive error handling
-- Enables natural language budget management: "Show me my spending on groceries this month" or "Create a recurring transaction for rent"
+Every Actual API call goes through `withActualApi()` in `src/lib/actual-adapter.ts`, which handles init / shutdown lifecycle, retry (3 attempts, exponential backoff), and concurrency limiting.
+
+## Decisions worth knowing about
+
+### 63 narrow tools, not 6 generic ones
+
+The MCP spec lets you ship one `do_anything` tool with a free-form prompt. I built 63 narrow tools instead, one per Actual operation, each with strict Zod-validated inputs. AI models route to the right tool more reliably; bad inputs fail at the schema, not after touching the database.
+
+### Why ship HTTP and stdio rather than just stdio
+
+stdio is easier and most Actual MCPs stop there. But LibreChat and LobeChat are HTTP-native; forcing them through `mcp-remote` adds latency and an extra failure surface. Two transports doubles the test matrix but unlocks the production use case.
+
+### You cannot avoid the data volume
+
+Actual Budget has no REST API. The official library downloads a local copy of your budget and syncs writes back. The server has to persist that copy or it re-downloads on every restart. Documented as a hard requirement in the Quick Start; misreading it is the number-one cause of failed first-time setups.
