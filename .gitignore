@@ -31,3 +31,6 @@ Thumbs.db
 # Local assets
 screenshots/
 assets/reference/
+
+# Local patch staging area (not part of the site)
+temp/
