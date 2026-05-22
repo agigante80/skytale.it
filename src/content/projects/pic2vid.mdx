@@ -1,12 +1,41 @@
 ---
 title: "pic2vid"
-description: "Image-to-video converter using Bash and FFmpeg. Batch converts image sequences into videos with configurable framerate, resolution, and encoding."
+tagline: "Turn a folder of photos into a WhatsApp-ready video or GIF"
+description: "Bash script that converts image sequences into WhatsApp-compatible MP4 videos or animated GIFs with per-image timing and metadata."
 category: "Utilities"
 tier: 3
 status: "maintained"
-techStack: ["Bash", "FFmpeg"]
+techStack: ["Bash", "FFmpeg", "ffprobe", "H.264", "Shell"]
 githubUrl: "https://github.com/agigante80/pic2vid"
-lastSyncedFrom: "2026-05-20T12:52:25Z"
+links:
+  docs: "https://github.com/agigante80/pic2vid#readme"
+stats:
+  - value: "2"
+    label: "Output formats"
+    sub: "MP4 video or animated GIF"
+  - value: "720"
+    unit: "px"
+    label: "Max resolution"
+    sub: "Auto-scaled for WhatsApp"
+  - value: "16"
+    unit: "MB"
+    label: "Size target"
+    sub: "WhatsApp sharing limit"
+quickstart:
+  primaryLabel: "Convert images to MP4"
+  primaryCode: "./pic2vid.sh -s mtime -d 3 ~/Photos/*.jpg"
+  altLabel: "Create an animated GIF"
+  altCode: "./pic2vid.sh -f gif -d 2 *.png"
+  docsHref: "https://github.com/agigante80/pic2vid#readme"
+lastSyncedFrom: "2026-05-22T00:00:00Z"
 ---
 
-A lightweight Bash script that wraps FFmpeg to convert image sequences into videos. Supports configurable framerate, output resolution, and encoding presets. Designed for batch processing  - point it at a directory of numbered frames and it produces a video file with sensible defaults, or fine-tune every parameter via command-line flags. Useful for timelapse assembly, animation previews, and converting screenshot sequences into shareable clips.
+## The problem
+
+I kept wanting to share a sequence of photos as a single short clip on WhatsApp, and it never just worked. WhatsApp is picky: it rejects videos without an audio track, it wants H.264 with a yuv420p pixel format, and it caps shared files at 16MB. Doing this by hand meant a different FFmpeg incantation every time, plus guesswork on scaling when the images had mismatched dimensions. I wanted one command that took a folder of pictures and gave me back something I could send.
+
+## How I built it
+
+pic2vid is a single Bash script wrapping FFmpeg and ffprobe. It checks for its dependencies up front and prints the right install command for your distro if anything is missing. From there it validates the input images, optionally sorts them by creation time, modification time, or filename, then inspects every image to find the largest dimensions so it can build a consistent canvas. Smaller images are centered with black padding, so aspect ratios stay intact and nothing gets stretched.
+
+Each image becomes its own video segment, which lets me set either a global duration or a separate timing per image. The segments are concatenated, custom metadata tags can be embedded, and ffprobe verifies the final duration matches what was expected. MP4 output uses H.264 with a silent AAC track and fast-start enabled so WhatsApp accepts it; GIF output uses a 256-color palette with Bayer dithering for smoother gradients. The result is a sharp, single-purpose utility that does one annoying job reliably.
