@@ -26,6 +26,11 @@
   --color-border: #232a34;
   --color-text: #ece9e1;
   --color-text-muted: #8a8a82;
+
+  /* Semantic colors for comparison tables and freshness indicators */
+  --color-positive: #4ade80;
+  --color-negative: #c97362;
+  --color-partial: #facc15;
 }
 
 html.light {
@@ -38,6 +43,11 @@ html.light {
   --color-accent: #2a6b78;
   --color-accent-hover: #3a8694;
   --color-accent-soft: #d9ecf0;
+
+  /* Darker semantic colors for AA contrast on the parchment background */
+  --color-positive: #2f8f4e;
+  --color-negative: #b4452f;
+  --color-partial: #8a6d12;
 }
 
 /* Base styles */

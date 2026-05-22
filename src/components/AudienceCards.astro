@@ -11,15 +11,16 @@ interface Audience {
 }
 interface Props {
   cards: Audience[];
+  number?: string;           // section eyebrow number, e.g. "01"
 }
-const { cards } = Astro.props;
+const { cards, number } = Astro.props;
 if (!cards || cards.length === 0) return null;
 ---
 
 <section class="audience-block">
   <div class="eb">
     <span class="dash"></span>
-    <span>Audience</span>
+    <span>{number ? `${number} / ` : ''}Audience</span>
   </div>
   <h2>Who this is for</h2>
 

@@ -19,8 +19,9 @@ interface Props {
   rows: Row[];
   snapshotDate?: string;
   caption?: string;
+  number?: string;           // section eyebrow number, e.g. "03"
 }
-const { thisProjectLabel, competitors, rows, snapshotDate, caption } = Astro.props;
+const { thisProjectLabel, competitors, rows, snapshotDate, caption, number } = Astro.props;
 
 function cellClass(s: string) {
   if (s.startsWith('✓')) return 'y';
@@ -34,7 +35,7 @@ function cellClass(s: string) {
 <section class="compare-block">
   <div class="eb">
     <span class="dash"></span>
-    <span>Comparison</span>
+    <span>{number ? `${number} / ` : ''}Comparison</span>
   </div>
   <h2>How it stacks against alternatives</h2>
   {snapshotDate && (
@@ -130,9 +131,9 @@ function cellClass(s: string) {
     min-width: 180px;
   }
   td.mine-cell { background: color-mix(in oklab, var(--color-accent) 5%, transparent); color: var(--color-text); }
-  td.y { color: #4ade80; }
-  td.n { color: color-mix(in oklab, var(--color-accent) 0%, #c97362); }
-  td.p { color: #facc15; }
+  td.y { color: var(--color-positive); }
+  td.n { color: var(--color-negative); }
+  td.p { color: var(--color-partial); }
   td.na { color: var(--color-text-muted); font-style: italic; }
   tr.group td {
     font-family: var(--font-mono);
