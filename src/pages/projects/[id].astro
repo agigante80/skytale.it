@@ -81,11 +81,13 @@ if (typeof live.dockerPulls === 'number') {
     sub: 'total · Docker Hub',
   });
 }
-if (typeof live.stars === 'number') {
+if (typeof live.stars === 'number' && live.stars > 0) {
   liveCards.push({
     value: live.stars.toString(),
     label: 'GitHub stars',
-    sub: typeof live.forks === 'number' ? `${live.forks} forks` : undefined,
+    sub: typeof live.forks === 'number' && live.forks > 0
+      ? `${live.forks} fork${live.forks === 1 ? '' : 's'}`
+      : undefined,
   });
 }
 /* Live cards lead; frontmatter cards fill the remaining slots, capped at 4. */
