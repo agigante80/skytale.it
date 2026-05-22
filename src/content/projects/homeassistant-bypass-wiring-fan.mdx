@@ -1,58 +1,67 @@
 ---
 title: "Home Assistant Bypass-Wiring Fan"
-description: "Bypass-wiring guide for a Home Assistant + Zigbee in-wall relay + Tuya WiFi smart ceiling fan, with diagrams, manuals, and a generic smart-toggle automation."
+description: "A reference build that makes a Tuya WiFi ceiling fan fully smart in Home Assistant while the original wall switches keep working untouched."
 category: "Utilities"
 tier: 2
 status: "active"
-techStack: ["Home Assistant", "Zigbee", "Tuya", "Smart Home"]
+techStack: ["Home Assistant", "Zigbee", "Tuya", "ZHA", "Excalidraw", "Home Automation"]
 githubUrl: "https://github.com/agigante80/homeassistant-bypass-wiring-fan"
 featured: false
 heroImage: "/images/projects/homeassistant-bypass-wiring-fan/hero.png"
 relatedArticles: ["smart-ceiling-fan-wall-switch-two-evenings-claude-andrea-gigante-lfcwe"]
-lastSyncedFrom: "2026-05-20T12:52:25Z"
+tagline: "Smart fan control without breaking the wall switches."
+lastSyncedFrom: "2026-05-22T00:00:00Z"
+quickstart:
+  primaryLabel: "Home Assistant automation"
+  primaryCode: |
+    # wall_switch_smart_toggle.yaml
+    trigger:
+      - platform: state
+        entity_id: <YOUR_WALL_SWITCH_ENTITY>
+    condition: []
+    action:
+      - choose:
+          - conditions:
+              - condition: or
+                conditions:
+                  - condition: state
+                    entity_id: <YOUR_FAN_ENTITY>
+                    state: "on"
+                  - condition: state
+                    entity_id: <YOUR_FAN_LIGHT_ENTITY>
+                    state: "on"
+            sequence:
+              - service: fan.turn_off
+                target: { entity_id: <YOUR_FAN_ENTITY> }
+              - service: light.turn_off
+                target: { entity_id: <YOUR_FAN_LIGHT_ENTITY> }
+        default:
+          - service: light.turn_on
+            target: { entity_id: <YOUR_FAN_LIGHT_ENTITY> }
+    mode: single
+  docsHref: "https://github.com/agigante80/homeassistant-bypass-wiring-fan"
 ---
 
-## What is this project?
+## The problem
 
-A reference build and Home Assistant automation for making a Tuya WiFi smart ceiling fan controllable from Home Assistant **without losing the look or feel of the original wall switches**. The technique uses a Zigbee in-wall relay in bypass-wiring mode, so the wall switches keep working mechanically, the fan canopy stays permanently powered (its WiFi chip never drops), and Home Assistant gains both full smart control and a wall-switch event it can react to.
+I wanted to replace a plain ceiling lamp with a smart ceiling fan that has an integrated light, fully controllable from Home Assistant. The fan I picked has a Tuya WiFi canopy, and that canopy holds the speed controller, the LED driver, and the WiFi chip that talks to Home Assistant. That chip needs constant 230 V to stay on the network. If it loses power, the canopy takes 20 to 30 seconds to boot and reconnect.
 
-The repository documents one specific install (SONOFF MINI-ZB2GS Zigbee relay plus an Ovlaim 132 cm DC ceiling fan in a Spanish two-way *conmutador* circuit) but the technique is brand-agnostic, and the included Home Assistant automation is parameterised so it adapts to any house.
+That single fact kills every obvious wiring option. Put a smart relay in line with the wall switch and the canopy drops off WiFi every time the switch is off. Work around it in Home Assistant by powering the canopy on first and waiting for it to reconnect, and you add 20 seconds of latency to every voice command, every app tap, every automation. Tape the switches permanently on, and the switches on the wall become a lie. Hardwire the fan past the switches, and the switches do nothing at all.
 
-## The Problem
+The house has a Spanish two-way (conmutador) circuit: two wall switches at opposite ends of the room sharing one lamp. Whatever I built had to leave those two switches looking and feeling exactly as before, because anyone in the house should be able to flip them without knowing anything changed.
 
-Replacing a "dumb" ceiling lamp with a WiFi smart ceiling fan creates a paradox. The fan's smart canopy needs **constant power** so its WiFi/Tuya chip stays on the network. The moment a wall switch cuts power, the canopy reboots and Home Assistant loses the entity. But people in the house still expect the wall switch to **do something useful** when they flip it.
+## How I built it
 
-In Spanish and European two-way *conmutador* circuits (and US 3-way circuits), the wall switches sit between live and the lamp. They are full single-pole-double-throw switches, not stateless push buttons. The naive options all have visible failure modes:
+The fix is bypass wiring. The fan canopy is wired straight to permanent live and neutral, completely around the relay's load output. The canopy is always powered, always on WiFi, always reachable. Home Assistant automations fire instantly with no boot-and-wait penalty.
 
-| Approach | Result |
-|---|---|
-| Tape the wall switch in the "on" position | Works, but the switch on the wall is now a lie |
-| Replace wall switch with a smart switch, fan downstream | Fan loses constant power, drops off WiFi on every flip |
-| Hardwire the fan past the switch entirely | Lose wall control completely |
-| **Bypass-wiring with a Zigbee relay (this project)** | Switches stay mechanical, fan stays powered, Home Assistant gets full control |
+The Zigbee relay (a SONOFF MINI-ZB2GS in this build) stops being a load controller and becomes a sensor. The switched-live coming back from the conmutador chain lands on the relay's S input instead of driving any load. The relay runs in edge-trigger mode, so every wall-switch flip produces a Zigbee event that toggles the relay's reported state in Home Assistant. The L1 and L2 load outputs are left capped and unused.
 
-## How I Built It
+A small Home Assistant automation listens to that switch entity and decides what each flip means. The logic I settled on is the smallest behaviour that feels like a real wall switch: if the fan or its light is on, flipping turns both off; if everything is off, flipping turns the light on. You never need two flips to get the room dark, and the switch always does something visible.
 
-The core idea is **bypass wiring**: the relay sits in the circuit as a *sensor*, not a load-controller. The fan canopy is wired around the relay (not through it), receiving permanent live independently. The wall-switch chain feeds into the relay's switch input, where edge-trigger mode reports every flip back to Home Assistant.
-
-A small Zigbee in-wall relay (SONOFF MINI-ZB2GS in this build) lands at whichever junction box has the most room. Wiring goes:
-
-- **Permanent live** to the relay's L terminal
-- **Neutral** shared between the relay and the fan canopy
-- **Wall-switch chain** (the *conmutador* travellers) wired to the relay's **S input**, not to the load output
-- **Load outputs L1/L2** left capped and unused
-- **Edge-trigger mode** on the relay, so every wall flip toggles the reported state in Home Assistant
-
-A Home Assistant automation listens to the relay's switch entity and decides what to do with the fan: toggle, cycle speed, turn on the light, whatever fits the room.
+I deliberately kept the policy in YAML rather than relying on a relay firmware feature like detached mode. Firmware features are brand-specific and version-specific. Bypass wiring is just a wiring choice, so it works on any 2-channel Zigbee relay with edge-trigger support, and changing what a flip does is a config edit instead of a rewire.
 
 ## Architecture
 
-The hardware and software boundary is clean. The relay does one job (report a state change), the canopy stays available (always powered), and Home Assistant does the policy (what each flip means). Because the wall-switch behaviour lives in the automation rather than in relay firmware, changing "first flip toggles the fan" to "first flip controls the light, double flip controls the fan" is a YAML edit, not a rewire.
+The hardware and software boundary is clean. The relay does one job, report a state change. The canopy stays available because it is always powered. Home Assistant owns the policy, deciding what a flip means. Three control surfaces (voice assistants, the Home Assistant app, and the physical wall switches) all drive the same fan and stay in sync through Home Assistant.
 
-The automation is parameterised by entity IDs, so adapting it to a different brand of smart fan or a different relay is mostly a config change. The wiring diagrams are exported from a single Excalidraw source file, so customising them for a different room, brand, or country is also a quick edit, not a redraw.
-
-## Impact
-
-- A working pattern documented end-to-end, with photographs, hand-drawn diagrams, vendor manuals, and a parameterised automation, for a problem with surprisingly little coherent material online.
-- Brand-agnostic and country-agnostic: works for European two-way, UK two-way, and US 3-way circuits with minor wiring substitutions.
-- The companion article ([A Smart Ceiling Fan, a Wall Switch, and Two Evenings with Claude](/articles/smart-ceiling-fan-wall-switch-two-evenings-claude-andrea-gigante-lfcwe)) walks through the research process that produced this solution: two evenings with Claude before the purchase, one more after the install revealed the WiFi-dropping problem.
+The repository documents one concrete install but is built to be adapted. The automation is parameterised by three entity IDs, so swapping in a different fan or relay is mostly a config change. The wiring diagrams export from a single Excalidraw source file, so redrawing them for a different room, brand, or country is a quick edit rather than a fresh drawing. The repo also bundles the vendor PDF manuals for offline reference and a terminology table that untangles bypass wiring from the firmware features it gets confused with online.
