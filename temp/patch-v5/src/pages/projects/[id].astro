@@ -25,16 +25,6 @@ const relatedArticles = project.data.relatedArticles.length > 0
   ? (await getAllArticles()).filter(a => project.data.relatedArticles.includes(a.slug))
   : [];
 
-/* === Sequential numbers for the eyebrowed sections (matches site convention) === */
-let _sec = 0;
-const secNum = () => String(++_sec).padStart(2, '0');
-const sectionNumbers = {
-  audience: (project.data.audience && project.data.audience.length > 0) ? secNum() : null,
-  quickstart: project.data.quickstart ? secNum() : null,
-  comparison: project.data.comparison ? secNum() : null,
-  related: relatedArticles.length > 0 ? secNum() : null,
-};
-
 /* === Resolve "last modified" from git for the SoftwareSourceCode schema === */
 const projectFile = `src/content/projects/${project.id}.mdx`;
 let dateModified = new Date().toISOString();
@@ -51,10 +41,7 @@ try {
 const live = (liveStats as Record<string, any>)[project.id] ?? {};
 function formatK(n: number) {
   if (n < 1000) return n.toString();
-  if (n < 10000) {
-    const t = (n / 1000).toFixed(1);
-    return (t.endsWith('.0') ? t.slice(0, -2) : t) + 'k';
-  }
+  if (n < 10000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
   return Math.round(n / 1000) + 'k';
 }
 const liveCards: { value: string; unit?: string; label: string; sub?: string }[] = [];
@@ -207,11 +194,21 @@ const softwareSchema = {
 
         <!-- Audience cards (frontmatter-driven) -->
         {project.data.audience && project.data.audience.length > 0 && (
-          <AudienceCards cards={project.data.audience} number={sectionNumbers.audience} />
+          <AudienceCards cards={project.data.audience} />
         )}
 
         <!-- MDX prose body: problem, key moves, architecture, decisions -->
-        <div class="project-body">
+        <div class="prose prose-invert prose-lg max-w-none
+          prose-headings:font-[family-name:var(--font-display)]
+          prose-h2:text-2xl prose-h2:mt-12 prose-h2:mb-4 prose-h2:pb-2 prose-h2:border-b prose-h2:border-[var(--color-border)]
+          prose-h3:text-lg prose-h3:mt-8 prose-h3:mb-2
+          prose-p:text-[var(--color-text-muted)]
+          prose-strong:text-[var(--color-text)]
+          prose-a:text-[var(--color-accent)] prose-a:no-underline hover:prose-a:underline
+          prose-li:text-[var(--color-text-muted)]
+          prose-code:text-[var(--color-accent)] prose-code:font-[family-name:var(--font-mono)] prose-code:bg-[var(--color-surface)] prose-code:px-1 prose-code:rounded
+          prose-pre:bg-[var(--color-surface)] prose-pre:border prose-pre:border-[var(--color-border)] prose-pre:rounded prose-pre:text-[var(--color-text)]
+        ">
           <Content />
         </div>
 
@@ -224,7 +221,6 @@ const softwareSchema = {
               altLabel={project.data.quickstart.altLabel}
               altCode={project.data.quickstart.altCode}
               docsHref={project.data.quickstart.docsHref}
-              number={sectionNumbers.quickstart}
             />
           </div>
         )}
@@ -238,7 +234,6 @@ const softwareSchema = {
               rows={project.data.comparison.rows}
               snapshotDate={project.data.comparison.snapshotDate}
               caption={project.data.comparison.caption}
-              number={sectionNumbers.comparison}
             />
           </div>
         )}
@@ -248,7 +243,7 @@ const softwareSchema = {
           <section class="mt-16 pt-10 border-t border-[var(--color-border)]">
             <div class="flex items-center gap-3 mb-6 text-[11px] uppercase tracking-[0.14em] text-[var(--color-accent)]" style="font-family: var(--font-mono);">
               <span class="inline-block w-6 h-px bg-[var(--color-accent)]"></span>
-              <span>{sectionNumbers.related ? `${sectionNumbers.related} / ` : ''}Wrote about this</span>
+              <span>Wrote about this</span>
             </div>
             <ul class="space-y-4">
               {relatedArticles.map(article => (
@@ -459,99 +454,4 @@ const softwareSchema = {
     letter-spacing: 0.1em;
   }
   .meta span { color: var(--color-text); }
-
-  /*
-    MDX case-study body. The rendered content comes from <Content />, so its
-    elements are not in this component's template and need :global() to be
-    reached by the (otherwise scoped) selectors below.
-  */
-  .project-body {
-    font-size: 16px;
-    line-height: 1.7;
-    color: var(--color-text-muted);
-  }
-  .project-body :global(h2) {
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-size: 24px;
-    color: var(--color-text);
-    letter-spacing: -0.01em;
-    margin: 44px 0 16px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--color-border);
-  }
-  .project-body :global(h2:first-child) { margin-top: 0; }
-  .project-body :global(h3) {
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-size: 17px;
-    color: var(--color-text);
-    margin: 30px 0 8px;
-  }
-  .project-body :global(p) { margin: 0 0 16px; }
-  .project-body :global(strong) { color: var(--color-text); font-weight: 600; }
-  .project-body :global(a) { color: var(--color-accent); text-decoration: none; }
-  .project-body :global(a:hover) { text-decoration: underline; }
-  .project-body :global(ul),
-  .project-body :global(ol) { margin: 0 0 16px; padding-left: 22px; }
-  .project-body :global(li) { margin: 4px 0; }
-  .project-body :global(li::marker) { color: var(--color-accent); }
-  .project-body :global(blockquote) {
-    margin: 0 0 20px;
-    padding-left: 16px;
-    border-left: 2px solid var(--color-accent);
-    color: var(--color-text-muted);
-    font-style: italic;
-  }
-  .project-body :global(hr) {
-    border: none;
-    border-top: 1px solid var(--color-border);
-    margin: 32px 0;
-  }
-  .project-body :global(img) {
-    max-width: 100%;
-    border: 1px solid var(--color-border);
-    border-radius: 6px;
-  }
-  /* Inline code. Shiki sets its own background on <pre>, so scope this to
-     code that is not inside a pre. */
-  .project-body :global(:not(pre) > code) {
-    font-family: var(--font-mono);
-    font-size: 0.86em;
-    color: var(--color-accent);
-    background: var(--color-surface);
-    padding: 2px 5px;
-    border-radius: 3px;
-  }
-  .project-body :global(pre) {
-    margin: 0 0 20px;
-    padding: 16px 18px;
-    border: 1px solid var(--color-border);
-    border-radius: 6px;
-    overflow-x: auto;
-    font-size: 13px;
-    line-height: 1.6;
-  }
-  .project-body :global(table) {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 0 0 20px;
-    font-size: 14px;
-  }
-  .project-body :global(th),
-  .project-body :global(td) {
-    text-align: left;
-    padding: 8px 12px;
-    border: 1px solid var(--color-border);
-    vertical-align: top;
-    color: var(--color-text-muted);
-  }
-  .project-body :global(th) {
-    background: var(--color-surface-2);
-    font-family: var(--font-mono);
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    font-weight: 500;
-  }
 </style>

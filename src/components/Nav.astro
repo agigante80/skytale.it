@@ -1,6 +1,4 @@
 ---
-import ThemeToggle from './ThemeToggle.astro';
-
 const navItems = [
   { label: 'Home', href: '/' },
   { label: 'About', href: '/about' },
@@ -41,12 +39,10 @@ const currentPath = Astro.url.pathname;
             {item.label}
           </a>
         ))}
-        <ThemeToggle />
       </div>
 
       <!-- Mobile menu button -->
-      <div class="flex items-center gap-2 md:hidden">
-        <ThemeToggle />
+      <div class="flex items-center md:hidden">
         <button
           id="mobile-menu-btn"
           aria-label="Toggle menu"

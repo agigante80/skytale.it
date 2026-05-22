@@ -18,7 +18,7 @@
   --color-accent-soft: #1d3641;
 }
 
-/* Adaptive tokens: swap on .light */
+/* Theme tokens: single dark theme */
 :root {
   --color-bg: #0a0c11;
   --color-surface: #12161d;
@@ -33,23 +33,6 @@
   --color-partial: #facc15;
 }
 
-html.light {
-  --color-bg: #f5f0e3;
-  --color-surface: #ffffff;
-  --color-surface-2: #ece6d8;
-  --color-border: #d6cfbe;
-  --color-text: #14161a;
-  --color-text-muted: #6c6960;
-  --color-accent: #2a6b78;
-  --color-accent-hover: #3a8694;
-  --color-accent-soft: #d9ecf0;
-
-  /* Darker semantic colors for AA contrast on the parchment background */
-  --color-positive: #2f8f4e;
-  --color-negative: #b4452f;
-  --color-partial: #8a6d12;
-}
-
 /* Base styles */
 html { scroll-behavior: smooth; }
 
@@ -57,7 +40,6 @@ body {
   font-family: var(--font-body);
   background-color: var(--color-bg);
   color: var(--color-text);
-  transition: background-color 0.3s, color 0.3s;
 }
 
 h1, h2, h3, h4, h5, h6 {

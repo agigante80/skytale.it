@@ -107,46 +107,9 @@ const allSchemas = schema
     ))}
 
     <ClientRouter />
-
-    <!-- Theme: apply before paint to prevent flash -->
-    <script is:inline>
-      (function() {
-        var stored = localStorage.getItem('theme');
-        var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        var isDark = stored ? stored === 'dark' : prefersDark;
-        if (!isDark) document.documentElement.classList.add('light');
-        else document.documentElement.classList.remove('light');
-      })();
-    </script>
   </head>
   <body class="min-h-screen flex flex-col">
     <Nav />
-
-    <!-- Theme toggle logic -->
-    <script is:inline data-astro-rerun>
-      (function() {
-        function updateIcons() {
-          var isLight = document.documentElement.classList.contains('light');
-          document.querySelectorAll('[data-theme-sun]').forEach(function(el) {
-            el.style.display = isLight ? 'none' : '';
-          });
-          document.querySelectorAll('[data-theme-moon]').forEach(function(el) {
-            el.style.display = isLight ? '' : 'none';
-          });
-        }
-
-        document.querySelectorAll('[data-theme-toggle]').forEach(function(btn) {
-          btn.onclick = function() {
-            document.documentElement.classList.toggle('light');
-            var isLight = document.documentElement.classList.contains('light');
-            localStorage.setItem('theme', isLight ? 'light' : 'dark');
-            updateIcons();
-          };
-        });
-
-        updateIcons();
-      })();
-    </script>
     <main class="flex-1">
       <slot />
     </main>
