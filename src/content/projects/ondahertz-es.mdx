@@ -1,13 +1,29 @@
 ---
 title: "OndaHertz.es"
-description: "AI-generated ham radio blog for the Spanish-speaking amateur radio community. Covers equipment reviews, antenna builds, propagation, and licensing guides."
+description: "AI-generated ham radio blog for the Spanish-speaking amateur radio community, fully written and illustrated by an automated pipeline."
 category: "Content"
 tier: 3
 status: "active"
-techStack: ["Jekyll", "ContentGen-AI", "AI"]
+techStack: ["Jekyll", "ContentGen-AI", "OpenAI API", "DALL-E", "GitHub Pages"]
 githubUrl: "https://github.com/agigante80/OndaHertz_es"
 liveUrl: "https://www.ondahertz.es/"
-lastSyncedFrom: "2026-05-20T12:52:25Z"
+lastSyncedFrom: "2026-05-22T00:00:00Z"
+tagline: "A hands-off experiment in fully automated AI publishing about amateur radio."
+links:
+  pipeline: "https://github.com/agigante80/ContentGen-AI"
+audience:
+  - who: "Spanish-speaking radio amateurs"
+    what: "Articles on equipment, antennas, propagation, and licensing in their own language."
+  - who: "Builders curious about AI publishing"
+    what: "A live, public proof of what an unattended content pipeline actually produces."
 ---
 
-A Spanish-language blog for the amateur radio community, generated and maintained by the ContentGen-AI pipeline. Built on Jekyll and hosted as a static site. Content covers ham radio equipment reviews, DIY antenna construction guides, propagation forecasting, band plans, and licensing procedures for Spanish amateur radio operators. The name "OndaHertz" combines "onda" (wave) with the frequency unit  - a nod to the radio spectrum.
+## The problem
+
+I wanted to know how far a fully automated content pipeline could go without a human in the loop. Not a demo, but a real site that lives on its own domain, publishes on its own, and lets anyone judge the quality for themselves. Ham radio was a good test subject: a niche with plenty of technical depth, an underserved Spanish-speaking audience, and a steady stream of topics to write about.
+
+## How I built it
+
+OndaHertz.es is a Jekyll static site hosted on GitHub Pages. Every article and every accompanying image is produced by my own ContentGen-AI pipeline, which calls the OpenAI API for the text and DALL-E for the illustrations. The site itself is just the output: the interesting part is the pipeline that feeds it.
+
+Running this in public taught me where the real work sits. The model is the easy part. Prompt design, topic selection, and keeping the output consistent and accurate across many posts are the hard parts. OndaHertz.es is honestly an experiment, and treating it as one is the point. It is a working reference for what a hands-off AI pipeline can ship today, and a reminder of where a human still has to step in.
