@@ -25,6 +25,16 @@ const relatedArticles = project.data.relatedArticles.length > 0
   ? (await getAllArticles()).filter(a => project.data.relatedArticles.includes(a.slug))
   : [];
 
+/* === Sequential numbers for the eyebrowed sections (matches site convention) === */
+let _sec = 0;
+const secNum = () => String(++_sec).padStart(2, '0');
+const sectionNumbers = {
+  audience: (project.data.audience && project.data.audience.length > 0) ? secNum() : null,
+  quickstart: project.data.quickstart ? secNum() : null,
+  comparison: project.data.comparison ? secNum() : null,
+  related: relatedArticles.length > 0 ? secNum() : null,
+};
+
 /* === Resolve "last modified" from git for the SoftwareSourceCode schema === */
 const projectFile = `src/content/projects/${project.id}.mdx`;
 let dateModified = new Date().toISOString();
@@ -197,7 +207,7 @@ const softwareSchema = {
 
         <!-- Audience cards (frontmatter-driven) -->
         {project.data.audience && project.data.audience.length > 0 && (
-          <AudienceCards cards={project.data.audience} />
+          <AudienceCards cards={project.data.audience} number={sectionNumbers.audience} />
         )}
 
         <!-- MDX prose body: problem, key moves, architecture, decisions -->
@@ -224,6 +234,7 @@ const softwareSchema = {
               altLabel={project.data.quickstart.altLabel}
               altCode={project.data.quickstart.altCode}
               docsHref={project.data.quickstart.docsHref}
+              number={sectionNumbers.quickstart}
             />
           </div>
         )}
@@ -237,6 +248,7 @@ const softwareSchema = {
               rows={project.data.comparison.rows}
               snapshotDate={project.data.comparison.snapshotDate}
               caption={project.data.comparison.caption}
+              number={sectionNumbers.comparison}
             />
           </div>
         )}
@@ -246,7 +258,7 @@ const softwareSchema = {
           <section class="mt-16 pt-10 border-t border-[var(--color-border)]">
             <div class="flex items-center gap-3 mb-6 text-[11px] uppercase tracking-[0.14em] text-[var(--color-accent)]" style="font-family: var(--font-mono);">
               <span class="inline-block w-6 h-px bg-[var(--color-accent)]"></span>
-              <span>Wrote about this</span>
+              <span>{sectionNumbers.related ? `${sectionNumbers.related} / ` : ''}Wrote about this</span>
             </div>
             <ul class="space-y-4">
               {relatedArticles.map(article => (

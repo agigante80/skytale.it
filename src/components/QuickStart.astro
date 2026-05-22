@@ -11,14 +11,15 @@ interface Props {
   altLabel?: string;
   altCode?: string;
   docsHref?: string;
+  number?: string;           // section eyebrow number, e.g. "02"
 }
-const { primaryLabel, primaryCode, altLabel, altCode, docsHref } = Astro.props;
+const { primaryLabel, primaryCode, altLabel, altCode, docsHref, number } = Astro.props;
 ---
 
 <section class="quickstart-block">
   <div class="eb">
     <span class="dash"></span>
-    <span>Quick start</span>
+    <span>{number ? `${number} / ` : ''}Quick start</span>
   </div>
   <h2>Run it in under a minute</h2>
 
