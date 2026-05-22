@@ -1,12 +1,31 @@
 ---
 title: "ContentGen-AI"
-description: "AI-powered blog content generation pipeline using OpenAI API. Automated research, writing, and publishing workflow for technical content."
+description: "Python toolkit that automates SEO-optimized blog and affiliate article generation end to end with the OpenAI API."
 category: "Content"
 tier: 3
 status: "maintained"
-techStack: ["Python", "OpenAI API", "Automation"]
+tagline: "Topic queue in, publish-ready articles out."
+techStack: ["Python", "OpenAI API", "DALL-E", "IndexNow", "Telegram API"]
 githubUrl: "https://github.com/agigante80/ContentGen-AI"
-lastSyncedFrom: "2026-05-20T12:52:25Z"
+lastSyncedFrom: "2026-05-22T00:00:00Z"
+quickstart:
+  primaryLabel: "Run the generator"
+  primaryCode: "python AI_scripts/generate_article.py"
+audience:
+  - who: "Niche site owners"
+    what: "Scale content production across multiple sites from one configurable pipeline."
+  - who: "Affiliate marketers"
+    what: "Turn product data into topics, descriptions, and organized assets automatically."
 ---
 
-A Python pipeline that automates the full blog content lifecycle  - from topic research and outline generation through writing, formatting, and publishing to Jekyll-based static sites. Uses the OpenAI API with structured prompts to produce technically accurate articles, then handles image generation, markdown formatting, and git-based publishing. Powers both galena.es and ondahertz.es as the upstream content engine.
+## The problem
+
+I run a few small AI-generated niche blogs (galena.es and ondahertz.es) and the bottleneck was never ideas, it was the repetitive labor between an idea and a published post: writing the draft, generating an image, naming files, dropping them in the right folder, and pinging search engines. ContentGen-AI exists to remove that labor so I can run several sites without it becoming a second job.
+
+## How I built it
+
+The pipeline is driven by a CSV queue. The generator reads the next topic, and if the queue is empty it asks OpenAI for fresh ones and writes them back to the CSV. I chose CSV files over a database deliberately: the workload is a simple ordered queue, CSV is trivial to inspect and hand-edit, and it keeps the toolkit dependency-light and portable.
+
+Each item flows through content generation, then a DALL-E image plus AI-written alt text, then a Markdown file saved into a category-based path. The same script handles two content shapes, standard blog posts and affiliate products, by branching the prompts rather than maintaining two codebases.
+
+For reliability I leaned on observability over cleverness. Telegram notifications report progress and errors at every stage, and bad topics get logged and moved to an error CSV instead of stopping the run. After publishing, the script pings IndexNow endpoints so new articles get crawled fast. Everything site-specific lives in environment variables and a shared `config.py`, so pointing the toolkit at a new blog is a config change, not a fork.
