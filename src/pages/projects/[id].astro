@@ -97,6 +97,14 @@ const statCards = [...liveCards, ...manualCards].slice(0, 4);
 /* Resolved version: live wins, frontmatter fallback */
 const version = live.version ?? project.data.version;
 
+/* === Built with: resolve linked project slugs to titles for the sidebar === */
+const builtWithSlugs = project.data.builtWith ?? [];
+const builtWithProjects = builtWithSlugs.length > 0
+  ? (await getCollection('projects'))
+      .filter(p => builtWithSlugs.includes(p.id))
+      .map(p => ({ slug: p.id, title: p.data.title }))
+  : [];
+
 /* === Status pill styles === */
 const statusStyles: Record<typeof project.data.status, string> = {
   active: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
@@ -156,7 +164,7 @@ const softwareSchema = {
         <span class="cat">{project.data.category}</span>
         <span class="sep">/</span>
         <span class:list={['status', statusStyles[project.data.status]]}>
-          ● {statusLabels[project.data.status]}{version ? ` · v${version}` : ''}
+          ● {statusLabels[project.data.status]}{version ? ` · v${String(version).replace(/^v/, '')}` : ''}
         </span>
       </div>
 
@@ -302,6 +310,19 @@ const softwareSchema = {
             ))}
           </div>
         </div>
+
+        {builtWithProjects.length > 0 && (
+          <div class="side-block">
+            <h4>Built with</h4>
+            <ul class="built-with">
+              {builtWithProjects.map(b => (
+                <li>
+                  <a href={`/projects/${b.slug}`}>{b.title}</a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         <div class="side-block">
           <h4>Metadata</h4>
@@ -477,6 +498,25 @@ const softwareSchema = {
     letter-spacing: 0.1em;
   }
   .meta span { color: var(--color-text); }
+
+  /* Built with: sidebar cross-link card to other projects in this portfolio */
+  .built-with { list-style: none; margin: 0; padding: 0; }
+  .built-with li { margin: 0; }
+  .built-with li a {
+    display: block;
+    padding: 8px 10px;
+    margin: 2px -10px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    color: var(--color-text);
+    transition: background .15s, color .15s;
+  }
+  .built-with li a:hover {
+    background: var(--color-bg);
+    color: var(--color-accent);
+  }
 
   /* On-this-page table of contents */
   .toc ul { list-style: none; margin: 0; padding: 0; }
