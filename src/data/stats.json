@@ -2,9 +2,9 @@
   "actual-mcp-server": {
     "npmDownloads": 1305,
     "version": "0.6.14",
-    "dockerPulls": 18607,
+    "dockerPulls": 18615,
     "releasedAt": "2026-05-17T08:45:24Z",
-    "syncedAt": "2026-06-01T07:59:15.326Z",
+    "syncedAt": "2026-06-02T07:49:36.410Z",
     "stars": 17,
     "forks": 4
   },
@@ -13,73 +13,73 @@
     "forks": 0,
     "version": "1.4.2",
     "releasedAt": "2026-04-16T14:18:00Z",
-    "syncedAt": "2026-06-01T07:59:15.801Z",
-    "dockerPulls": 7355
+    "syncedAt": "2026-06-02T07:49:36.843Z",
+    "dockerPulls": 7379
   },
   "agentgate": {
     "stars": 0,
     "forks": 0,
     "version": "1.4.4",
     "releasedAt": "2026-04-06T15:13:57Z",
-    "syncedAt": "2026-06-01T07:59:16.295Z",
+    "syncedAt": "2026-06-02T07:49:37.231Z",
     "dockerPulls": 2440
   },
   "contentgen-ai": {
     "stars": 0,
     "forks": 0,
-    "syncedAt": "2026-06-01T07:59:16.717Z"
+    "syncedAt": "2026-06-02T07:49:37.634Z"
   },
   "forge-kit": {
     "stars": 0,
     "forks": 0,
-    "syncedAt": "2026-06-01T07:59:17.110Z"
+    "syncedAt": "2026-06-02T07:49:38.049Z"
   },
   "galena-es": {
     "stars": 0,
     "forks": 0,
-    "syncedAt": "2026-06-01T07:59:17.579Z"
+    "syncedAt": "2026-06-02T07:49:38.553Z"
   },
   "homeassistant-bypass-wiring-fan": {
     "stars": 1,
     "forks": 0,
-    "syncedAt": "2026-06-01T07:59:17.966Z"
+    "syncedAt": "2026-06-02T07:49:38.997Z"
   },
   "lego-city-undercover-linux": {
     "stars": 0,
     "forks": 0,
-    "syncedAt": "2026-06-01T07:59:18.350Z"
+    "syncedAt": "2026-06-02T07:49:39.404Z"
   },
   "ondahertz-es": {
     "stars": 0,
     "forks": 0,
-    "syncedAt": "2026-06-01T07:59:18.761Z"
+    "syncedAt": "2026-06-02T07:49:39.896Z"
   },
   "pic2vid": {
     "stars": 0,
     "forks": 0,
-    "syncedAt": "2026-06-01T07:59:19.223Z"
+    "syncedAt": "2026-06-02T07:49:40.303Z"
   },
   "qr-with-icon": {
     "stars": 0,
     "forks": 0,
-    "syncedAt": "2026-06-01T07:59:19.695Z"
+    "syncedAt": "2026-06-02T07:49:40.735Z"
   },
   "safeharbor-media-stack": {
     "stars": 0,
     "forks": 0,
-    "syncedAt": "2026-06-01T07:59:20.110Z"
+    "syncedAt": "2026-06-02T07:49:41.150Z"
   },
   "vibe-coding-prompts": {
     "stars": 2,
     "forks": 1,
-    "syncedAt": "2026-06-01T07:59:20.510Z"
+    "syncedAt": "2026-06-02T07:49:41.521Z"
   },
   "vpnsentinel": {
     "stars": 0,
     "forks": 0,
     "version": "1.1.3",
     "releasedAt": "2025-12-16T08:46:47Z",
-    "syncedAt": "2026-06-01T07:59:20.994Z",
+    "syncedAt": "2026-06-02T07:49:41.992Z",
     "dockerPulls": 4928
   }
 }
