@@ -169,7 +169,7 @@ For each NEW / UPDATE / ARCHIVE item, do exactly the following.
 - Derive `techStack`: GH `language` + GH `topics` that look like tech labels.
 - Derive `status`: `active` if `pushed_at` within 30 days, else `maintained`.
 - Derive `category`: best match from `[AI/MCP, Security, Finance, Utilities, Content]` based on topics and description. Default `Utilities`.
-- Find a hero image in README: parse the first `![...](...)` whose URL does NOT contain any of `shields.io`, `badge.fury.io`, `/badge/`, `badges.`, or `badge` in the path. Resolve relative URLs against `https://raw.githubusercontent.com/agigante80/<name>/<default_branch>/`. Download to `src/assets/images/projects/<slug>/hero.<ext>` and verify > 10 KB.
+- Find a hero image in README: parse the first `![...](...)` whose URL does NOT contain any of `shields.io`, `badge.fury.io`, `/badge/`, `badges.`, or `badge` in the path. Resolve relative URLs against `https://raw.githubusercontent.com/agigante80/<name>/<default_branch>/`. Create the folder first (`mkdir -p src/assets/images/projects/<slug>`), download to `src/assets/images/projects/<slug>/hero.<ext>`, and verify > 10 KB. Keeping it under `src/assets/` lets Astro optimize it (WebP, responsive srcset, intrinsic dimensions).
 - **Suggest related articles:** load `src/lib/articles.ts`, do case-insensitive substring matching on each article's `title`, `description`, and `tldr` against the project name (and common variants: with/without hyphens, with/without "MCP" suffix, etc.). Collect article slugs whose text mentions the project. If matches found, add them to `relatedArticles`. Skip if no matches; do not invent links.
 - Write `src/content/projects/<slug>.mdx`. Frontmatter only, no body:
   ```yaml
@@ -183,7 +183,7 @@ For each NEW / UPDATE / ARCHIVE item, do exactly the following.
   githubUrl: "https://github.com/agigante80/<name>"
   liveUrl: "<GH homepage if present>"   # omit if absent
   featured: false
-  heroImage: "/images/projects/<slug>/hero.<ext>"   # omit if no hero found
+  heroImage: "../../assets/images/projects/<slug>/hero.<ext>"   # path RELATIVE to the MDX file (content-collection image() helper optimizes it); omit if no hero found
   relatedArticles: [...]   # omit if empty
   lastSyncedFrom: "<now, ISO 8601 with Z suffix>"
   ---
@@ -237,17 +237,18 @@ Rules:
 
 The skill never changes tier. These are text suggestions only.
 
-### 8. Commit and push
+### 8. Build gate, commit and push
 
-If no writes occurred in step 6 (everything was current), skip commit. Otherwise:
+If no writes occurred in step 6 (everything was current), skip commit. Otherwise, run a local build first and confirm it succeeds. This is the schema validator: a malformed `heroImage` path (it must be relative to the MDX file for the `image()` helper) or any other bad frontmatter fails here rather than breaking the Cloudflare deploy. Never push a red build.
 
 ```bash
+npm run build
 git add -A
 git commit -m "chore(sync): N added, M updated, K archived from github.com/agigante80"
 git push origin main
 ```
 
-Replace `N`, `M`, `K` with actual counts.
+Replace `N`, `M`, `K` with actual counts. If the build fails, fix the offending frontmatter (or drop the hero) and rebuild before committing.
 
 ### 9. Report
 

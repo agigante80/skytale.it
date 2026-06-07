@@ -92,7 +92,17 @@ Open `src/lib/articles.ts` and add a new object to the `linkedinArticles` array.
 
 **Important:** Strip tracking parameters (`trackingId`, `lipi`) from the URL. Keep only the base `/pulse/...` path.
 
-### 6. Publish
+### 6. Build gate (before publishing)
+
+Run a local build and confirm it succeeds before committing. This validates the cover (Astro optimizes it through `<Image>` at build time) and catches any TypeScript error in `articles.ts`. Never push without a green build:
+
+```bash
+npm run build
+```
+
+If it fails, fix the cause and rebuild. Do not commit a failing build.
+
+### 7. Publish
 
 Stage and commit the two changed files, then push to `main`:
 
@@ -102,7 +112,7 @@ git commit -m "Add article: <title>"
 git push origin main
 ```
 
-### 7. Verify
+### 8. Verify
 
 Tell the user the article has been added and published. Show them:
 - Title and date
