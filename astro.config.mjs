@@ -7,6 +7,12 @@ import sitemap from '@astrojs/sitemap';
 // https://astro.build/config
 export default defineConfig({
   site: 'https://www.skytale.it',
+  // Mobile-first responsive images: every <Image>/<Picture> defaults to a
+  // constrained layout, so Astro auto-generates srcset + sizes scaled down to
+  // the source width. Sharp (bundled) does the AVIF/WebP encoding at build time.
+  image: {
+    layout: 'constrained',
+  },
   vite: {
     plugins: [tailwindcss()]
   },

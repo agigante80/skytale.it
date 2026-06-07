@@ -101,7 +101,7 @@ const bandId = `scytale-${Math.random().toString(36).slice(2, 8)}`;
   </div>
 
   {cycle.length > 1 && (
-    <div class="scytale-pager" role="tablist" aria-label="Cipher messages">
+    <div class="scytale-pager" role="group" aria-label="Cipher messages">
       {cycle.map((msg, i) => (
         <button
           type="button"
@@ -206,23 +206,35 @@ const bandId = `scytale-${Math.random().toString(36).slice(2, 8)}`;
   .scytale-pager {
     display: flex;
     justify-content: center;
-    gap: 6px;
-    margin-top: 10px;
+    gap: 2px;
+    margin-top: 6px;
   }
+  /*
+    The button is the touch target (>=24x24 per WCAG 2.5.8); the visible pip is
+    a ::before bar so the control stays small while remaining easy to hit.
+  */
   .scytale-pager .pip {
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: none;
+    padding: 0;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+  }
+  .scytale-pager .pip::before {
+    content: "";
     width: 14px;
     height: 4px;
     border-radius: 2px;
-    border: none;
     background: var(--color-border);
-    padding: 0;
-    cursor: pointer;
     transition: background .25s, width .25s;
   }
-  .scytale-pager .pip:hover {
+  .scytale-pager .pip:hover::before {
     background: color-mix(in oklab, var(--color-accent) 50%, var(--color-border));
   }
-  .scytale-pager .pip.active {
+  .scytale-pager .pip.active::before {
     background: var(--color-accent);
     width: 22px;
   }
@@ -305,8 +317,8 @@ const bandId = `scytale-${Math.random().toString(36).slice(2, 8)}`;
   @media (max-width: 640px) {
     .scytale-caption { font-size: 9px; }
     .scytale-caption .hint { font-size: 8px; padding: 3px 7px; }
-    .scytale-pager .pip { width: 12px; height: 3px; }
-    .scytale-pager .pip.active { width: 18px; }
+    .scytale-pager .pip::before { width: 12px; height: 3px; }
+    .scytale-pager .pip.active::before { width: 18px; }
   }
 </style>
 

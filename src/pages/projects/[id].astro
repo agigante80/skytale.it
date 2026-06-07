@@ -1,5 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
+import { Image, getImage } from 'astro:assets';
 import ShareButtons from '../../components/ShareButtons.astro';
 import StatStrip from '../../components/StatStrip.astro';
 import AudienceCards from '../../components/AudienceCards.astro';
@@ -143,12 +144,19 @@ const softwareSchema = {
   ...(project.data.githubUrl ? { "codeRepository": project.data.githubUrl } : {}),
   ...(version ? { "softwareVersion": version } : {}),
 };
+
+// heroImage is an optimized ImageMetadata (via the content-collection image()
+// helper). Render a social-friendly 1200x630 JPEG for og:image; fall back to
+// the site default when a project has no hero.
+const ogImg = project.data.heroImage
+  ? await getImage({ src: project.data.heroImage, width: 1200, height: 630, format: 'jpeg' })
+  : undefined;
 ---
 
 <Base
   title={`${project.data.title} | Andrea Gigante`}
   description={project.data.description}
-  ogImage={project.data.heroImage}
+  ogImage={ogImg?.src}
   schema={[breadcrumbSchema, softwareSchema]}
 >
   <!-- Hero -->
@@ -218,7 +226,14 @@ const softwareSchema = {
       <div class="lg:col-span-8 lg:order-1 min-w-0">
         {project.data.heroImage && (
           <figure class="hero-image">
-            <img src={project.data.heroImage} alt={`${project.data.title} hero image`} loading="eager" decoding="async" />
+            <Image
+              src={project.data.heroImage}
+              alt={`${project.data.title} hero image`}
+              widths={[480, 768, 1024, 1280]}
+              sizes="(max-width: 1024px) 100vw, 760px"
+              loading="eager"
+              fetchpriority="high"
+            />
           </figure>
         )}
 
@@ -567,8 +582,10 @@ const softwareSchema = {
   }
   .project-body :global(p) { margin: 0 0 16px; }
   .project-body :global(strong) { color: var(--color-text); font-weight: 600; }
-  .project-body :global(a) { color: var(--color-accent); text-decoration: none; }
-  .project-body :global(a:hover) { text-decoration: underline; }
+  /* Underline by default: inline prose links must be distinguishable by more
+     than color (WCAG 1.4.1, axe link-in-text-block). */
+  .project-body :global(a) { color: var(--color-accent); text-decoration: underline; text-underline-offset: 2px; }
+  .project-body :global(a:hover) { color: var(--color-accent-hover); }
   .project-body :global(ul),
   .project-body :global(ol) { margin: 0 0 16px; padding-left: 22px; }
   .project-body :global(li) { margin: 4px 0; }
