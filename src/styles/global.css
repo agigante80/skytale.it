@@ -26,6 +26,10 @@
   --color-border: #232a34;
   --color-text: #ece9e1;
   --color-text-muted: #8a8a82;
+  /* Muted text that still clears WCAG AA (4.5:1) on raised surfaces such as
+     --color-border / --color-surface-2 chips and badges, where plain
+     --color-text-muted only reaches ~4.15:1. */
+  --color-text-soft: #a8a89f;
 
   /* Semantic colors for comparison tables and freshness indicators */
   --color-positive: #4ade80;

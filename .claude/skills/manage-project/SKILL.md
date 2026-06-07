@@ -60,11 +60,13 @@ Use AskUserQuestion. Do not guess these.
 Fetch the README (`gh api repos/<owner>/<repo>/readme --jq .download_url`, then `curl -sL`). Find the first markdown image whose URL does NOT contain `shields.io`, `badge.fury.io`, `/badge/`, `badges.`, or `badge` in the path. Resolve relative paths against `https://raw.githubusercontent.com/<owner>/<repo>/<defaultBranch>/`. Confirm with the user, then:
 
 ```bash
-mkdir -p public/images/projects/<slug>
-curl -sL -o public/images/projects/<slug>/hero.<ext> "<resolved-url>"
+mkdir -p src/assets/images/projects/<slug>
+curl -sL -o src/assets/images/projects/<slug>/hero.<ext> "<resolved-url>"
 ```
 
 Verify it is over 10 KB. Skip the field entirely if no real hero is found.
+
+The hero lives under `src/assets/` so Astro optimizes it via the content-collection `image()` helper (WebP, responsive `srcset`, intrinsic width/height that prevents layout shift). Because of this, `heroImage` in frontmatter is a path **relative to the MDX file** (`../../assets/images/projects/<slug>/hero.<ext>`), not a `/images/...` public URL. The page renderer turns it into a 1200x630 JPEG for `og:image` automatically.
 
 ## 4. Suggest related articles
 
@@ -83,7 +85,7 @@ techStack: ["<lang>", "<framework>", "<runtime>"]
 githubUrl: "<repo URL>"
 liveUrl: "<homepage URL>"        # omit if absent
 featured: <true | false>
-heroImage: "/images/projects/<slug>/hero.<ext>"   # omit if none
+heroImage: "../../assets/images/projects/<slug>/hero.<ext>"   # omit if none
 relatedArticles: ["<slug>", ...]                  # omit if empty
 ---
 ```
@@ -122,7 +124,7 @@ Run the shared self-check (see "Self-check" below), then:
 
 ```bash
 npm run build
-git add src/content/projects/<slug>.mdx public/images/projects/<slug>/
+git add src/content/projects/<slug>.mdx src/assets/images/projects/<slug>/
 git commit -m "Add project: <Project Title>"
 git push
 ```

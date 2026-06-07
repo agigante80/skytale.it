@@ -169,7 +169,7 @@ For each NEW / UPDATE / ARCHIVE item, do exactly the following.
 - Derive `techStack`: GH `language` + GH `topics` that look like tech labels.
 - Derive `status`: `active` if `pushed_at` within 30 days, else `maintained`.
 - Derive `category`: best match from `[AI/MCP, Security, Finance, Utilities, Content]` based on topics and description. Default `Utilities`.
-- Find a hero image in README: parse the first `![...](...)` whose URL does NOT contain any of `shields.io`, `badge.fury.io`, `/badge/`, `badges.`, or `badge` in the path. Resolve relative URLs against `https://raw.githubusercontent.com/agigante80/<name>/<default_branch>/`. Download to `public/images/projects/<slug>/hero.<ext>` and verify > 10 KB.
+- Find a hero image in README: parse the first `![...](...)` whose URL does NOT contain any of `shields.io`, `badge.fury.io`, `/badge/`, `badges.`, or `badge` in the path. Resolve relative URLs against `https://raw.githubusercontent.com/agigante80/<name>/<default_branch>/`. Download to `src/assets/images/projects/<slug>/hero.<ext>` and verify > 10 KB.
 - **Suggest related articles:** load `src/lib/articles.ts`, do case-insensitive substring matching on each article's `title`, `description`, and `tldr` against the project name (and common variants: with/without hyphens, with/without "MCP" suffix, etc.). Collect article slugs whose text mentions the project. If matches found, add them to `relatedArticles`. Skip if no matches; do not invent links.
 - Write `src/content/projects/<slug>.mdx`. Frontmatter only, no body:
   ```yaml

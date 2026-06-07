@@ -41,14 +41,14 @@ Extract the **URL slug** directly from the LinkedIn pulse URL: it's the path seg
 - URL: `https://www.linkedin.com/pulse/where-start-coding-ai-practical-guide-andrea-gigante-o8kie`
 - Slug: `where-start-coding-ai-practical-guide-andrea-gigante-o8kie`
 
-Use this slug as the image filename:
+Use this slug as the image filename. Covers live under `src/assets/` (not `public/`) so Astro's `<Image>` pipeline optimizes them (WebP/AVIF, responsive `srcset`, intrinsic dimensions). No manual compression is needed; drop the original in and the build handles the rest.
 ```bash
-curl -sL -o public/images/articles/<slug>.jpg "<og:image URL>"
+curl -sL -o src/assets/images/articles/<slug>.jpg "<og:image URL>"
 ```
 
 Verify the file downloaded and is a real cover image (should be > 10KB). Anything smaller is likely a placeholder or icon:
 ```bash
-ls -la public/images/articles/<slug>.jpg
+ls -la src/assets/images/articles/<slug>.jpg
 ```
 
 If the image is missing or < 10KB, warn the user: the article page will show a platform placeholder instead of a cover image, which is less compelling for social sharing.
@@ -84,7 +84,7 @@ Open `src/lib/articles.ts` and add a new object to the `linkedinArticles` array.
   tags: ["Tag1", "Tag2", "Tag3"],
   url: "<clean URL without tracking params>",
   platform: 'linkedin',
-  image: "/images/articles/<slug>.jpg",
+  image: "/images/articles/<slug>.jpg",   // keep this legacy-style path; resolveArticleCover() matches the file in src/assets by filename stem
   slug: "<slug extracted from URL, exact match>",
   tldr: "<2-4 sentence TL;DR>",
 },
@@ -97,7 +97,7 @@ Open `src/lib/articles.ts` and add a new object to the `linkedinArticles` array.
 Stage and commit the two changed files, then push to `main`:
 
 ```bash
-git add src/lib/articles.ts public/images/articles/<slug>.jpg
+git add src/lib/articles.ts src/assets/images/articles/<slug>.jpg
 git commit -m "Add article: <title>"
 git push origin main
 ```

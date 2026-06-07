@@ -1,6 +1,8 @@
 ---
 import Base from '../layouts/Base.astro';
+import { Image } from 'astro:assets';
 import ScytaleBand from '../components/ScytaleBand.astro';
+import skytaleImg from '../assets/images/skytale.png';
 
 const skillGroups = [
   {
@@ -176,10 +178,13 @@ const interests = ["Security Enthusiast", "Coffee Addict", "Sci-Fi Fan", "Chess"
         <!-- Scytale illustration -->
         <div class="flex justify-center">
           <div class="w-full max-w-sm rounded-2xl overflow-hidden border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
-            <img
-              src="/images/skytale.png"
+            <Image
+              src={skytaleImg}
               alt="Scytale, ancient Greek transposition cipher used by Spartans"
+              widths={[320, 480, 768]}
+              sizes="(max-width: 384px) 100vw, 384px"
               class="w-full h-auto rounded-lg"
+              loading="lazy"
             />
             <p class="mt-3 text-[10px] uppercase tracking-[0.12em] text-center text-[var(--color-text-muted)]" style="font-family: var(--font-mono);">
               σκυτάλη: Spartan transposition cipher

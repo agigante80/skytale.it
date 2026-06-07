@@ -12,7 +12,7 @@ import { glob } from 'astro/loaders';
  */
 const projects = defineCollection({
   loader: glob({ pattern: '**/*.mdx', base: './src/content/projects' }),
-  schema: z.object({
+  schema: ({ image }) => z.object({
     title: z.string(),
     description: z.string(),
     category: z.enum(['AI/MCP', 'Security', 'Finance', 'Utilities', 'Content']),
@@ -23,7 +23,7 @@ const projects = defineCollection({
     liveUrl: z.string().url().optional(),
     featured: z.boolean().default(false),
     metrics: z.string().optional(),
-    heroImage: z.string().optional(),
+    heroImage: image().optional(),
     relatedArticles: z.array(z.string()).default([]),
     lastSyncedFrom: z.string().datetime().optional(),
 
