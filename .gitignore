@@ -32,5 +32,8 @@ Thumbs.db
 screenshots/
 assets/reference/
 
+# Playwright MCP working directory (capture artifacts)
+.playwright-mcp/
+
 # Local patch staging area (not part of the site)
 temp/
