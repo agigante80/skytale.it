@@ -6,33 +6,35 @@ tier: 1
 status: "active"
 techStack: ["Node.js", "Docker", "SQLite", "Prometheus", "GoCardless API", "Telegram Bot API"]
 githubUrl: "https://github.com/agigante80/Actual-sync"
+heroImage: "../../assets/images/projects/actual-sync/hero.png"
 lastSyncedFrom: "2026-05-23T00:00:00Z"
 
 tagline: "Keep every budget current without ever touching the sync button."
 
-version: "1.0.0"
+version: "1.8.4"
 
 links:
+  docker: "https://github.com/agigante80/Actual-sync/pkgs/container/actual-sync"
   dockerHub: "https://hub.docker.com/r/agigante80/actual-sync"
   docs: "https://github.com/agigante80/Actual-sync#readme"
 
 stats:
-  - value: "309"
+  - value: "584"
     unit: "tests"
     label: "Passing test suite"
-    sub: "84.77% coverage"
-  - value: "229"
+    sub: "~81% statement coverage"
+  - value: "92"
     unit: "MB"
     label: "Alpine-based image"
     sub: "amd64 and arm64"
-  - value: "4"
+  - value: "6"
     unit: "channels"
     label: "Failure alerting"
-    sub: "Telegram, email, Slack, Discord"
+    sub: "Telegram, email, Slack, Discord, ntfy, webhook"
   - value: "0"
     unit: "critical"
-    label: "Security audit findings"
-    sub: "Score 86 of 100"
+    label: "First-party vulnerabilities"
+    sub: "2 high remain in a transitive dep"
 
 audience:
   - who: "Self-hosted Actual Budget users"
@@ -83,7 +85,7 @@ Each Actual Budget instance is configured independently: its own URL, credential
 
 ### Treats failure as a first-class state
 
-Bank APIs rate-limit, time out, and return errors. Actual-sync retries with exponential backoff and jitter, detects rate-limit responses specifically, and tracks consecutive failures per server. When a threshold is crossed it sends a notification through Telegram, email, Slack, or Discord, with rate limiting so a bad night does not flood you with messages.
+Bank APIs rate-limit, time out, and return errors. Actual-sync retries with exponential backoff and jitter, detects rate-limit responses specifically, and tracks consecutive failures per server. When a threshold is crossed it sends a notification through any of six channels, Telegram, email, Slack, Discord, ntfy, or a generic webhook (Gotify, Home Assistant, n8n, or your own endpoint), with rate limiting so a bad night does not flood you with messages. Every alert reports which accounts synced, which failed, and which were skipped and why, so the message is actionable rather than a bare "sync failed".
 
 ### Records every sync, so you can answer questions later
 
@@ -92,6 +94,10 @@ Every run is written to a local SQLite history database: which server, when, how
 ### Exposes itself to the monitoring you already run
 
 HTTP endpoints cover `/health`, `/ready`, and `/metrics`, plus a Prometheus scrape endpoint. The readiness probe makes it behave well under Kubernetes. If you already have Grafana, sync health lands on the same panels as the rest of your home lab instead of living in a separate silo.
+
+### Gives you a dashboard, not just raw metrics
+
+Not everyone runs Grafana, so the service ships its own dark-theme web dashboard with four tabs. **Overview** shows service health, per-server status, and per-account syncability badges (syncable, manual, or closed, with a "show closed" toggle), recent activity, and a live log stream over WebSocket. **Analytics** charts all-time success rates, sync-duration trends, and a timeline. **History** is a searchable log of every sync with the per-account breakdown (how many synced, failed, or were skipped) and full error detail. **Settings** covers date-format preferences, orphaned-server cleanup, and data management. The whole dashboard can be gated behind basic-auth or token auth when it is exposed beyond the home network.
 
 ## Architecture
 
@@ -130,8 +136,8 @@ The `out-of-sync-migrations` failure is the single most likely way this service 
 
 ### A custom logger instead of a logging library
 
-Structured logging here is hand-written rather than pulled from a framework. The cost is code I have to maintain myself: JSON and pretty formats, correlation IDs, rotation with gzip compression, per-server levels. The benefit is that the dependency tree stays small, the audit surface stays small, and `npm audit` stays clean, which matters for something that holds bank credentials. For a focused service this is a fair trade; for a larger app it would not be.
+Structured logging here is hand-written rather than pulled from a framework. The cost is code I have to maintain myself: JSON and pretty formats, correlation IDs, rotation with gzip compression, per-server levels. The benefit is that the dependency tree stays small and the audit surface stays small, which matters for something that holds bank credentials: the only outstanding advisories live in a transitive dependency, never in code I wrote. For a focused service this is a fair trade; for a larger app it would not be.
 
 ### Test the matching and failure paths hard, because the data is real
 
-This service touches financial data, so a quiet bug is worse than a loud crash. The suite is 309 tests at 84.77% coverage, weighted toward the parts that are easy to get subtly wrong: retry and backoff behavior, rate-limit detection, partial-failure handling across multiple servers, and configuration validation. High coverage is not the goal in itself. The goal is confidence that a failure surfaces as an alert rather than as a wrong number in someone's budget.
+This service touches financial data, so a quiet bug is worse than a loud crash. The suite is 584 tests across 19 files, holding roughly 81% statement coverage over the unit-tested modules (the top-level orchestrator and entry point are excluded by design and exercised end to end instead). The tests are weighted toward the parts that are easy to get subtly wrong: retry and backoff behavior, rate-limit detection, partial-failure handling across multiple servers, and configuration validation. High coverage is not the goal in itself. The goal is confidence that a failure surfaces as an alert rather than as a wrong number in someone's budget.
