@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **NEVER use em dashes (--) or en dashes (-) in any content, copy, descriptions, titles, TL;DRs, commit messages, or code comments.** This is a hard rule with no exceptions.
 - Use a hyphen (-) to connect compound words or modifiers (e.g. "AI-assisted", "well-known").
 - Rewrite sentences to avoid constructions that would normally call for an em or en dash. Use a period, a comma, parentheses, a colon, or restructure the sentence instead.
-- Enforced by a `PreToolUse` hook (`.claude/hooks/no-dash-check.sh`, wired in `.claude/settings.json`): any Write or Edit whose content contains an em or en dash is blocked. Incoming patch files are not scrubbed by the hook; the `/review-patch` skill scans those.
+- Enforced by a `PreToolUse` hook (`.claude/hooks/block-dashes.py`, run via `python3`, wired in `.claude/settings.json`): any Write, Edit, MultiEdit, NotebookEdit, or Bash whose content contains an em or en dash is blocked. This is the canonical forge-kit `block-dashes` hook (version 1); it fails open on unparseable input. Incoming patch files are not scrubbed by the hook; the `/review-patch` skill scans those.
 
 ## Project Overview
 
