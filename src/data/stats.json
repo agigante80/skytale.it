@@ -2,10 +2,10 @@
   "actual-mcp-server": {
     "npmDownloads": 6282,
     "version": "0.22.1",
-    "dockerPulls": 64275,
+    "dockerPulls": 64471,
     "releasedAt": "2026-09-06T19:58:12Z",
-    "syncedAt": "2026-09-09T06:26:17.262Z",
-    "stars": 51,
+    "syncedAt": "2026-09-10T06:25:41.790Z",
+    "stars": 54,
     "forks": 19
   },
   "actual-sync": {
@@ -13,80 +13,80 @@
     "forks": 1,
     "version": "1.16.1",
     "releasedAt": "2026-09-02T01:29:45Z",
-    "syncedAt": "2026-09-09T06:26:17.715Z",
-    "dockerPulls": 23824
+    "syncedAt": "2026-09-10T06:25:42.415Z",
+    "dockerPulls": 23931
   },
   "agentgate": {
     "stars": 0,
     "forks": 0,
     "version": "1.4.7",
     "releasedAt": "2026-06-16T20:25:28Z",
-    "syncedAt": "2026-09-09T06:26:18.148Z",
+    "syncedAt": "2026-09-10T06:25:42.929Z",
     "dockerPulls": 6132
   },
   "contentgen-ai": {
     "stars": 0,
     "forks": 0,
-    "syncedAt": "2026-09-09T06:26:18.571Z"
+    "syncedAt": "2026-09-10T06:25:43.458Z"
   },
   "forge-kit": {
     "stars": 0,
     "forks": 0,
-    "syncedAt": "2026-09-09T06:26:18.932Z",
-    "version": "0.1.0",
-    "releasedAt": "2026-09-06T13:20:15Z"
+    "syncedAt": "2026-09-10T06:25:43.921Z",
+    "version": "0.3.0",
+    "releasedAt": "2026-09-09T23:57:53Z"
   },
   "galena-es": {
     "stars": 1,
     "forks": 0,
-    "syncedAt": "2026-09-09T06:26:19.601Z"
+    "syncedAt": "2026-09-10T06:25:44.485Z"
   },
   "homeassistant-bypass-wiring-fan": {
     "stars": 1,
     "forks": 0,
-    "syncedAt": "2026-09-09T06:26:20.087Z"
+    "syncedAt": "2026-09-10T06:25:44.998Z"
   },
   "lego-city-undercover-linux": {
     "stars": 1,
     "forks": 0,
-    "syncedAt": "2026-09-09T06:26:20.546Z"
+    "syncedAt": "2026-09-10T06:25:45.472Z"
   },
   "ondahertz-es": {
     "stars": 0,
     "forks": 0,
-    "syncedAt": "2026-09-09T06:26:20.956Z"
+    "syncedAt": "2026-09-10T06:25:46.039Z"
   },
   "pic2vid": {
     "stars": 0,
     "forks": 0,
-    "syncedAt": "2026-09-09T06:26:21.434Z"
+    "syncedAt": "2026-09-10T06:25:46.531Z"
   },
   "qr-with-icon": {
     "stars": 0,
     "forks": 0,
-    "syncedAt": "2026-09-09T06:26:21.915Z"
+    "syncedAt": "2026-09-10T06:25:47.056Z"
   },
   "safeharbor-media-stack": {
     "stars": 0,
     "forks": 0,
-    "syncedAt": "2026-09-09T06:26:22.397Z"
+    "syncedAt": "2026-09-10T06:25:47.555Z"
   },
   "vibe-coding-prompts": {
     "stars": 9,
     "forks": 1,
-    "syncedAt": "2026-09-09T06:26:22.849Z"
+    "syncedAt": "2026-09-10T06:25:48.075Z"
   },
   "vpnsentinel": {
     "stars": 0,
     "forks": 0,
     "version": "1.1.8",
     "releasedAt": "2026-09-06T05:29:02Z",
-    "syncedAt": "2026-09-09T06:26:23.251Z",
+    "syncedAt": "2026-09-10T06:25:48.658Z",
     "dockerPulls": 9840
   },
   "wander-and-tales": {
     "stars": 0,
     "forks": 0,
-    "syncedAt": "2026-09-09T06:26:23.690Z"
+    "syncedAt": "2026-09-10T06:25:49.118Z"
   }
 }
