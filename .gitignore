@@ -37,3 +37,29 @@ assets/reference/
 
 # Local patch staging area (not part of the site)
 temp/
+
+# Private journal (local thinking notes, never committed)
+.private-journal/
+# --- AI assistant files (local only, never published) ---
+# Anchored entries (/NAME) are root-only on purpose: a nested AGENTS.md or
+# CLAUDE.md can belong to the project's own content and must stay tracked.
+.claude/
+/CLAUDE.md
+/CLAUDE.local.md
+/AGENTS.md
+/GEMINI.md
+.gemini/
+.codex/
+.cursor/
+.cursorrules
+.cursorignore
+.aider*
+.continue/
+.windsurf/
+.windsurfrules
+.clinerules
+.roo/
+.roomodes
+.devin/
+.specstory/
+.github/copilot-instructions.md
