@@ -89,3 +89,5 @@ public/           # Static assets, favicons, robots.txt, llms.txt
 ## License
 
 [MIT](LICENSE)
+
+SEO checks run through the [seo-inspector](https://www.npmjs.com/package/@mgsrevolver/seo-inspector) MCP server (`npx -y @mgsrevolver/seo-inspector`); add it to your own assistant config — the repo does not ship one.
