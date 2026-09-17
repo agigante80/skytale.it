@@ -1,0 +1,18 @@
+# Things this project has decided it may show. Tracked and public on purpose.
+# Keys: root, prefix, email (public scanner); skip (both).
+# NEVER put a private NAME here — the file is public, and a name would be an index.
+root proj
+# .github/workflows/sync-stats.yml:32: GitHub's own bot address for actions committing as it
+email stats-bot@users.noreply.github.com
+# reference/current-site.md:100: the site owner's own contact address, published on the site
+# by design (same reasoning as forge-kit's own allow-file entry for this address)
+email a.gigante@gmail.com
+# src/content/projects/forge-kit.mdx:32: this project's own portfolio entry for the forge-kit
+# repo documents it as cloned to a fixed location, its canonical example root
+root forge-kit
+# src/content/projects/pic2vid.mdx:26: a generic, standard user folder name
+root Photos
+
+# NEVER ALLOWED, left blocking: scripts/capture_localhost.py:9, scripts/capture_task.py:12 show
+# this machine's real home path; reference/current-site.md:175 is a private-name hit from the
+# private scanner. Content decisions for the owner, not this allow-file.
