@@ -172,5 +172,5 @@ Keep verification tags if still valid; update meta title and description for the
 - **Home** — Hero, brief intro, featured projects, latest articles
 - **About** — Full bio, skills, the Skytale story, languages, interests
 - **Projects** — Full portfolio with filters (AI/MCP, Security, Finance, Utilities)
-- **Articles** — Blog section (sourced from [redacted]Andrea repo)
+- **Articles** — Blog section (sourced from personal-articles repo)
 - **Contact** — Links, email, social

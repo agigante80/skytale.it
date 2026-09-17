@@ -7,9 +7,12 @@ Capture three specific screenshots:
 """
 
 import os
+from pathlib import Path
+
 from playwright.sync_api import sync_playwright
 
-SCREENSHOTS_DIR = "[redacted]/[redacted]/skytale.it/screenshots"
+REPO_ROOT = Path(__file__).resolve().parents[1]
+SCREENSHOTS_DIR = str(REPO_ROOT / "screenshots")
 BASE_URL = "http://localhost:4321"
 
 os.makedirs(SCREENSHOTS_DIR, exist_ok=True)
