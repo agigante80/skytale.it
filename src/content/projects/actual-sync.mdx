@@ -11,7 +11,7 @@ lastSyncedFrom: "2026-06-12T00:00:00Z"
 
 tagline: "Keep every budget current without ever touching the sync button."
 
-version: "1.8.4"
+version: "1.20.0"
 
 links:
   docker: "https://github.com/agigante80/Actual-sync/pkgs/container/actual-sync"
@@ -19,11 +19,11 @@ links:
   docs: "https://github.com/agigante80/Actual-sync#readme"
 
 stats:
-  - value: "584"
+  - value: "6,192"
     unit: "tests"
     label: "Passing test suite"
-    sub: "~81% statement coverage"
-  - value: "92"
+    sub: "91% coverage on the live badge"
+  - value: "113"
     unit: "MB"
     label: "Alpine-based image"
     sub: "amd64 and arm64"
@@ -34,7 +34,7 @@ stats:
   - value: "0"
     unit: "critical"
     label: "First-party vulnerabilities"
-    sub: "2 high remain in a transitive dep"
+    sub: "1 high in a transitive dep (audit 2026-10-26)"
 
 audience:
   - who: "Self-hosted Actual Budget users"
@@ -136,8 +136,8 @@ The `out-of-sync-migrations` failure is the single most likely way this service 
 
 ### A custom logger instead of a logging library
 
-Structured logging here is hand-written rather than pulled from a framework. The cost is code I have to maintain myself: JSON and pretty formats, correlation IDs, rotation with gzip compression, per-server levels. The benefit is that the dependency tree stays small and the audit surface stays small, which matters for something that holds bank credentials: the only outstanding advisories live in a transitive dependency, never in code I wrote. For a focused service this is a fair trade; for a larger app it would not be.
+Structured logging here is hand-written rather than pulled from a framework. The cost is code I have to maintain myself: JSON and pretty formats, correlation IDs, rotation with gzip compression, per-server levels. The benefit is that the dependency tree stays small and the audit surface stays small, which matters for something that holds bank credentials: the outstanding advisories live in dependencies, never in code I wrote. For a focused service this is a fair trade; for a larger app it would not be.
 
 ### Test the matching and failure paths hard, because the data is real
 
-This service touches financial data, so a quiet bug is worse than a loud crash. The suite is 584 tests across 19 files, holding roughly 81% statement coverage over the unit-tested modules (the top-level orchestrator and entry point are excluded by design and exercised end to end instead). The tests are weighted toward the parts that are easy to get subtly wrong: retry and backoff behavior, rate-limit detection, partial-failure handling across multiple servers, and configuration validation. High coverage is not the goal in itself. The goal is confidence that a failure surfaces as an alert rather than as a wrong number in someone's budget.
+This service touches financial data, so a quiet bug is worse than a loud crash. The suite is 6,192 tests at the time of writing, holding about 91% coverage, with the floor enforced in CI at 70% for lines, functions and statements and 61% for branches. The tests are weighted toward the parts that are easy to get subtly wrong: retry and backoff behavior, rate-limit detection, partial-failure handling across multiple servers, and configuration validation. High coverage is not the goal in itself. The goal is confidence that a failure surfaces as an alert rather than as a wrong number in someone's budget.

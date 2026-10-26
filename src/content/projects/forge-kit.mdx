@@ -4,22 +4,21 @@ description: "Claude Code governance toolkit that reads your codebase and instal
 tagline: "Project governance that knows your stack, not a generic checklist"
 category: "AI/MCP"
 tier: 2
-status: "maintained"
+status: "active"
 techStack: ["Python", "Claude Code", "Plugin", "GitHub Actions", "Markdown"]
 githubUrl: "https://github.com/agigante80/forge-kit"
 featured: false
 lastSyncedFrom: "2026-05-23T00:00:00Z"
 stats:
+  - value: "66"
+    label: "Components in 7 plugin groups"
+    sub: "9 agents, 4 commands, 19 skills, 8 hooks, 26 shell assets"
   - value: "6"
     label: "Issue template types"
-    sub: "All v4 with GWT scenarios"
-  - value: "5"
-    label: "Core specialist gates"
-    sub: "Security, architect, dev, QA, GDPR"
-  - value: "10"
-    unit: "/10"
-    label: "Ticket-gate quality bar"
-    sub: "All specialists must score full marks"
+    sub: "GWT scenarios, test specs, security checklist"
+  - value: "3"
+    label: "Ticket-gate verdicts"
+    sub: "PASS, NEEDS-WORK or BLOCKED, never a score"
 audience:
   - who: "Claude Code users"
     what: "Install the plugin and run forge-adapt to get governance components rewritten for the project at hand."
@@ -27,7 +26,7 @@ audience:
     what: "Adopt the governance layer (issue templates and labels) as plain Markdown and YAML, then add automation later."
 quickstart:
   primaryLabel: "Install via plugin marketplace"
-  primaryCode: "/plugin marketplace add agigante80/forge-kit\n/plugin install forge-kit-adapt@forge-kit"
+  primaryCode: "/plugin marketplace add agigante80/forge-kit\n/plugin install forge-kit-governance@forge-kit"
   altLabel: "Manual install"
   altCode: "git clone https://github.com/agigante80/forge-kit ~/forge-kit"
   docsHref: "https://github.com/agigante80/forge-kit#docs"
@@ -43,14 +42,14 @@ I wanted governance that is specific. "Check for SQL injection" should become "c
 
 forge-kit is split into two deliberately separable layers.
 
-The governance layer works without any AI tool. It ships six v4 issue templates with Given/When/Then scenarios, unit and E2E test specs, and GDPR and security checklists, plus a GitHub label taxonomy. A team on Cursor, Copilot, or no AI CLI can copy `.github/ISSUE_TEMPLATE/` and `labels.yml` and get value immediately.
+The governance layer works without any AI tool. It ships six issue templates (bug, feature, design, infrastructure, security, contribution) with Given/When/Then scenarios, unit and E2E test specs, personal-data handling and a security checklist, plus a GitHub label taxonomy. A team on Cursor, Copilot, or no AI CLI can copy `.github/ISSUE_TEMPLATE/` and `labels.yml` and get value immediately.
 
-The automation layer is Claude Code-native. `forge-adapt` is the skill that bridges the library and a target project. It reads the stack files, CLAUDE.md, source tree, and existing `.claude/` contents to build a project profile, cross-references that profile against the forge-kit library, ranks components by relevance, and waits for approval. Nothing is written until you choose. Then Claude rewrites each selected component against the profile and installs it into `.claude/`.
+The automation layer is Claude Code-native. `forge-adapt` is the skill that bridges the library and a target project. It reads the stack files, CLAUDE.md, source tree, and existing `.claude/` contents to build a project profile, cross-references that profile against the forge-kit library, ranks components by relevance, and waits for approval. Nothing is written until you choose. Then most components are registered by enabling the plugin group they live in, and only the ones that need a project-specific copy (project-scoped components, hooks, or a bare clone with no marketplace) are rewritten against the profile and installed into `.claude/`.
 
 I kept approval as an explicit gate because the whole point is trust: adapted output is only useful if the developer reviews what gets generated rather than accepting a silent install.
 
 ## Architecture
 
-The library lives in its own repository. Each consuming project gets a customised local copy under its own `.claude/`, so two projects that install the same component end up with different files. forge-adapt auto-updates by checking blob SHAs against the GitHub remote, which means library improvements propagate without a manual sync step, and Phase 4 of a run flags any installed component that has drifted from the reference.
+The library lives in its own repository, split into seven plugin groups. Registered components update with the plugin and own no file in the consuming repo. Adapted copies carry a per-component version marker, and `forge-adapt drift` compares those markers against the library to report what has fallen behind, writing nothing. `forge-adapt refresh <name>` then merges in what one component is missing while preserving the project-specific adaptation.
 
-The `ticket-gate` agent enforces a quality bar on every GitHub issue before code is written. Five core specialists (security, architect, developer, QA, GDPR) each score the ticket, and all must reach 10 for the gate to pass. Tickets filed against an older template are auto-upgraded to v4 with synthesised GWT scenarios and test specs, so the gate works retroactively without manual rework.
+The `ticket-gate` agent decides whether an issue is ready to implement before code is written. A set of specialist lenses (security, architecture, testing, personal-data handling) each read the ticket, and the verdict is PASS, NEEDS-WORK or BLOCKED with a concrete list of what must change, never a numeric score.

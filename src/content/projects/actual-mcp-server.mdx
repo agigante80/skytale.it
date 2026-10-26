@@ -1,18 +1,18 @@
 ---
 title: "Actual MCP Server"
-description: "Production-grade Model Context Protocol server that connects LibreChat, LobeChat, and Claude Desktop directly to your self-hosted Actual Budget. 71 tools, two transports, multi-budget switching at runtime."
+description: "Production-grade Model Context Protocol server that connects LibreChat, LobeChat, and Claude Desktop directly to your self-hosted Actual Budget. 84 tools, two transports, toolsets to publish only what a client needs, multi-budget switching at runtime."
 category: "AI/MCP"
 tier: 1
 status: "active"
 techStack: ["TypeScript", "Node.js", "MCP", "Docker", "Express", "Zod", "Winston"]
 githubUrl: "https://github.com/agigante80/actual-mcp-server"
 featured: true
-metrics: "71 tools | 87% API coverage | Production-ready"
+metrics: "84 tools | 9 toolsets | Production-ready"
 lastSyncedFrom: "2026-06-12T00:00:00Z"
 
 tagline: "Talk to your budget. Run it anywhere. Trust it in production."
 
-version: "0.6.54"
+version: "0.24.0"
 
 links:
   npm: "https://www.npmjs.com/package/actual-mcp-server"
@@ -20,14 +20,14 @@ links:
   docs: "https://github.com/agigante80/actual-mcp-server#readme"
 
 stats:
-  - value: "71"
+  - value: "84"
     unit: "tools"
     label: "Most comprehensive"
-    sub: "Across 12 categories"
-  - value: "87"
-    unit: "%"
-    label: "Actual Budget API coverage"
-    sub: "Schedules pending"
+    sub: "Across 16 categories"
+  - value: "9"
+    unit: "toolsets"
+    label: "Publish only what a client needs"
+    sub: "The chat preset is 12 tools, 76% smaller"
   - value: "15"
     unit: "sessions"
     label: "Concurrent connection pool"
@@ -57,7 +57,8 @@ quickstart:
       -e ACTUAL_PASSWORD=your_password \
       -e ACTUAL_BUDGET_SYNC_ID=your_sync_id \
       -e MCP_SSE_AUTHORIZATION=your_token \
-      -v actual-mcp-data:/data \
+      -v actual-mcp-data:/app/data \
+      -v actual-mcp-logs:/app/logs \
       ghcr.io/agigante80/actual-mcp-server:latest
 
     # Verify
@@ -89,9 +90,9 @@ comparison:
     - "WGDev/ynab-mcp"
   rows:
     - label: "Version"
-      cells: ["v0.6.14", "v1.11.1", "v0.2.0", "v0.1.0"]
+      cells: ["v0.24.0", "v1.11.1", "v0.2.0", "v0.1.0"]
     - label: "Tool count"
-      cells: ["63", "~22", "18", "9"]
+      cells: ["84", "~22", "18", "9"]
 
     - group: "Setup and distribution"
       label: ""
@@ -128,7 +129,7 @@ comparison:
       cells: ["✓ 6 exclusive tools", "✗", "✗", "N/A"]
     - label: "Bank sync"
       cells: ["✓ GoCardless / SimpleFIN", "✗", "✓", "N/A"]
-  caption: "When to choose another: <strong>s-stefanov</strong> for built-in read-only mode. <strong>henfrydls</strong> for Spanish UI and natural-language dates. <strong>ynab-mcp</strong> if you are on YNAB instead of Actual."
+  caption: "Competitor columns are from the snapshot date; this project's column is current. When to choose another: <strong>henfrydls</strong> for Spanish UI and natural-language dates. <strong>ynab-mcp</strong> if you are on YNAB instead of Actual."
 ---
 
 ## The problem
@@ -141,7 +142,7 @@ Personal finance is an unforgiving domain. A misrouted transaction or a deleted 
 
 ### Two transports, one codebase
 
-HTTP (`--http`) for remote clients like LibreChat. Stdio (`--stdio`) for local Claude Desktop. Same 63 tools either way. Most alternatives pick one.
+HTTP (`--http`) for remote clients like LibreChat. Stdio (`--stdio`) for local Claude Desktop. Same 84 tools either way. Most alternatives pick one.
 
 ### Six exclusive ActualQL query tools
 
@@ -159,6 +160,10 @@ Connection pooling (up to 15 concurrent sessions), exponential-backoff retry, fu
 
 JWKS-validated JWTs, `AUTH_BUDGET_ACL` for per-user budget scoping. Casdoor-tested. The only Actual MCP with real multi-tenancy.
 
+### Toolsets, so a chat client is not handed all 84 tools
+
+Every tool sits in exactly one of nine groups (context, transactions, analysis, budget, rules, schedules, structure, query, admin). `MCP_TOOLSETS` picks which groups to publish, `MCP_TOOLS` adds single tools on top by name, and the `chat` preset publishes the 12 tools a conversational client actually reaches for. Measured on the `tools/list` payload, that preset is 76% smaller than the full set, which is context budget handed back to the model. `MCP_READ_ONLY=true` hides and refuses the 47 write-capable tools for a client that should only ever look.
+
 ## Architecture
 
 Each AI client speaks MCP over its preferred transport. The server normalises both into the same internal tool dispatcher, which wraps every Actual Budget API call in a retry-and-pool layer before touching the local SQLite copy.
@@ -167,7 +172,7 @@ Each AI client speaks MCP over its preferred transport. The server normalises bo
 ┌─────────────┐   MCP/HTTP    ┌──────────────────┐   Actual API   ┌──────────────┐
 │  LibreChat  │ ◄────────────► │  Actual MCP      │ ◄────────────► │   Actual     │
 │  LobeChat   │                │  Server          │                │   Budget     │
-│  (remote)   │                │  (63 tools)      │                │   Server     │
+│  (remote)   │                │  (84 tools)      │                │   Server     │
 └─────────────┘                └──────────────────┘                └──────────────┘
                                         ▲
 ┌─────────────┐   MCP/stdio             │
@@ -183,9 +188,9 @@ Every Actual API call goes through `withActualApi()` in `src/lib/actual-adapter.
 
 ## Decisions worth knowing about
 
-### 63 narrow tools, not 6 generic ones
+### 84 narrow tools, not 6 generic ones
 
-The MCP spec lets you ship one `do_anything` tool with a free-form prompt. I built 63 narrow tools instead, one per Actual operation, each with strict Zod-validated inputs. AI models route to the right tool more reliably; bad inputs fail at the schema, not after touching the database.
+The MCP spec lets you ship one `do_anything` tool with a free-form prompt. I built 84 narrow tools instead, one per Actual operation, each with strict Zod-validated inputs. AI models route to the right tool more reliably; bad inputs fail at the schema, not after touching the database.
 
 ### Why ship HTTP and stdio rather than just stdio
 
